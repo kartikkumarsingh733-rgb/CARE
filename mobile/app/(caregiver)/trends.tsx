@@ -48,18 +48,19 @@ export default function TrendsScreen() {
   );
 
   const chartConfig = {
-    backgroundGradientFrom: Colors.caregiverNavyLight,
-    backgroundGradientTo: Colors.caregiverNavyLight,
-    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    backgroundGradientFrom: Colors.caregiverCardBg,
+    backgroundGradientTo: Colors.caregiverCardBg,
+    color: (opacity = 1) => `rgba(30, 136, 229, ${opacity})`,
+    labelColor: (opacity = 1) => Colors.caregiverTextMuted,
     strokeWidth: 3,
     barPercentage: 0.5,
     useShadowColorFromDataset: false,
     propsForDots: {
       r: '4',
       strokeWidth: '2',
-      stroke: Colors.gold
-    }
+      stroke: Colors.caregiverPrimary
+    },
+    decimalPlaces: 0,
   };
 
   return (
@@ -71,7 +72,7 @@ export default function TrendsScreen() {
 
       {loading ? (
         <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color={Colors.gold} />
+          <ActivityIndicator size="large" color={Colors.caregiverPrimary} />
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -93,9 +94,12 @@ export default function TrendsScreen() {
                 ],
                 legend: ['Memory', 'Attention']
               }}
-              width={screenWidth - Spacing.lg * 2 - Spacing.lg * 2} // minus padding
+              width={screenWidth - 32 - 32} // minus padding (16*2) and inner padding (16*2)
               height={220}
-              chartConfig={chartConfig}
+              chartConfig={{
+                ...chartConfig,
+                color: (opacity = 1) => `rgba(30, 136, 229, ${opacity})`,
+              }}
               bezier
               style={styles.chartStyle}
             />
@@ -112,13 +116,13 @@ export default function TrendsScreen() {
                   }
                 ]
               }}
-              width={screenWidth - Spacing.lg * 2 - Spacing.lg * 2}
+              width={screenWidth - 32 - 32}
               height={220}
               yAxisLabel=""
               yAxisSuffix="s"
               chartConfig={{
                 ...chartConfig,
-                color: (opacity = 1) => `rgba(240, 185, 11, ${opacity})`, // Gold
+                color: (opacity = 1) => Colors.caregiverPrimary,
               }}
               style={styles.chartStyle}
             />
@@ -143,24 +147,27 @@ export default function TrendsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.caregiverNavy },
+  safe: { flex: 1, backgroundColor: Colors.caregiverSecondary },
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.lg,
+    paddingHorizontal: 16,
+    paddingTop: 32,
+    paddingBottom: 16,
+    backgroundColor: Colors.caregiverBg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.caregiverBorder,
   },
   title: {
-    fontFamily: Typography.fontFamily.display,
-    fontSize: Typography.size.xxl,
-    color: Colors.textOnDark,
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 24,
+    color: Colors.caregiverText,
   },
   subtitle: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: Typography.size.sm,
-    color: 'rgba(255,255,255,0.5)',
-    marginTop: 2,
+    fontSize: 16,
+    color: Colors.caregiverTextMuted,
+    marginTop: 4,
   },
-  scroll: { paddingHorizontal: Spacing.lg, paddingBottom: 80 },
+  scroll: { paddingHorizontal: 16, paddingBottom: 80 },
   loadingBox: {
     flex: 1,
     justifyContent: 'center',
@@ -168,30 +175,34 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.xs,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: 12,
+    color: Colors.caregiverTextMuted,
     letterSpacing: 1.2,
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.md,
+    marginTop: 24,
+    marginBottom: 12,
   },
   chartCard: {
-    backgroundColor: Colors.caregiverNavyLight,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
+    backgroundColor: Colors.caregiverCardBg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.caregiverBorder,
+    padding: 16,
     alignItems: 'center',
-    ...Shadow.card,
+    ...Shadow.caregiverCard,
   },
   chartStyle: {
-    borderRadius: Radius.md,
+    borderRadius: 8,
   },
   adherenceCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.caregiverNavyLight,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
+    backgroundColor: Colors.caregiverCardBg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.caregiverBorder,
+    padding: 16,
     alignItems: 'center',
-    gap: Spacing.lg,
-    ...Shadow.card,
+    gap: 16,
+    ...Shadow.caregiverCard,
   },
   adherenceCircle: {
     width: 80,
@@ -204,27 +215,27 @@ const styles = StyleSheet.create({
   },
   adherencePct: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.lg,
-    color: Colors.textOnDark,
+    fontSize: 20,
+    color: Colors.caregiverText,
   },
   adherenceSub: {
     fontFamily: Typography.fontFamily.regular,
     fontSize: 10,
-    color: 'rgba(255,255,255,0.7)',
+    color: Colors.caregiverTextMuted,
   },
   adherenceInfo: {
     flex: 1,
   },
   adherenceText: {
     fontFamily: Typography.fontFamily.semiBold,
-    fontSize: Typography.size.md,
-    color: Colors.textOnDark,
+    fontSize: 16,
+    color: Colors.caregiverText,
   },
   adherenceDesc: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: Typography.size.sm,
-    color: 'rgba(255,255,255,0.6)',
+    fontSize: 14,
+    color: Colors.caregiverTextMuted,
     marginTop: 4,
-    lineHeight: 18,
+    lineHeight: 20,
   },
 });

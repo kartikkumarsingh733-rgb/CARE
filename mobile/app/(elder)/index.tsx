@@ -129,24 +129,35 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>{greeting}</Text>
           <Text style={[styles.name, { color: F.headerGreenText }]}>{patient.name.split(' ')[0]}ji</Text>
         </View>
-        <View style={styles.timeBox}>
-          <Text style={styles.timeText}>
-            {new Date().toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true,
-            }).toLowerCase()}
-          </Text>
-          <Text style={[styles.dateText, { color: F.headerGreenText }]}>
-            {new Date().toLocaleDateString('en-US', {
-              weekday: 'long',
-            })}
-            {',\n'}
-            {new Date().toLocaleDateString('en-US', {
-              day: 'numeric',
-              month: 'long',
-            })}
-          </Text>
+        <View style={styles.headerRight}>
+          <View style={styles.timeBox}>
+            <Text style={styles.timeText}>
+              {new Date().toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+              }).toLowerCase()}
+            </Text>
+            <Text style={[styles.dateText, { color: F.headerGreenText }]}>
+              {new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+              })}
+              {',\n'}
+              {new Date().toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'long',
+              })}
+            </Text>
+          </View>
+          
+          <TouchableOpacity 
+            style={styles.caregiverToggle}
+            onPress={() => router.push('/caregiver-pin')}
+            accessible={true}
+            accessibilityLabel="Switch to Caregiver Mode"
+          >
+            <FontAwesome5 name="user-cog" size={24} color={F.headerGreenText} />
+          </TouchableOpacity>
         </View>
       </Animated.View>
 
@@ -267,6 +278,11 @@ const styles = StyleSheet.create({
   timeBox: {
     alignItems: 'flex-end',
     paddingTop: 4,
+  },
+  caregiverToggle: {
+    padding: 8,
+    backgroundColor: '#1E3526', 
+    borderRadius: 20,
   },
   timeText: {
     fontFamily: Typography.fontFamily.bold,

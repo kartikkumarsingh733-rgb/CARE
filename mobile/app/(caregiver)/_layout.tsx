@@ -1,26 +1,23 @@
-// Caregiver Mode tab navigator — navy theme (matches screenshots)
+// Caregiver Mode tab navigator — Material Design Redesign
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors, Typography } from '@/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
 
 function TabIcon({
-  emoji,
+  iconName,
   label,
   focused,
 }: {
-  emoji: string;
+  iconName: keyof typeof MaterialIcons.glyphMap;
   label: string;
   focused: boolean;
 }) {
+  const color = focused ? Colors.caregiverPrimary : Colors.caregiverTextMuted;
   return (
     <View style={styles.tabItem}>
-      <Text style={styles.tabEmoji}>{emoji}</Text>
-      <Text
-        style={[
-          styles.tabLabel,
-          { color: focused ? Colors.tabBarActive : Colors.tabBarInactive },
-        ]}
-      >
+      <MaterialIcons name={iconName} size={24} color={color} />
+      <Text style={[styles.tabLabel, { color }]}>
         {label}
       </Text>
     </View>
@@ -40,7 +37,7 @@ export default function CaregiverTabLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="🏠" label="Home" focused={focused} />
+            <TabIcon iconName="dashboard" label="Home" focused={focused} />
           ),
         }}
       />
@@ -48,7 +45,7 @@ export default function CaregiverTabLayout() {
         name="patients"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="👥" label="Patients" focused={focused} />
+            <TabIcon iconName="people" label="Patients" focused={focused} />
           ),
         }}
       />
@@ -56,7 +53,7 @@ export default function CaregiverTabLayout() {
         name="alerts"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="🔔" label="Alerts" focused={focused} />
+            <TabIcon iconName="notifications" label="Alerts" focused={focused} />
           ),
         }}
       />
@@ -64,7 +61,7 @@ export default function CaregiverTabLayout() {
         name="trends"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="📈" label="Trends" focused={focused} />
+            <TabIcon iconName="trending-up" label="Trends" focused={focused} />
           ),
         }}
       />
@@ -72,7 +69,7 @@ export default function CaregiverTabLayout() {
         name="access"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="⚙️" label="Access" focused={focused} />
+            <TabIcon iconName="settings" label="Settings" focused={focused} />
           ),
         }}
       />
@@ -82,21 +79,21 @@ export default function CaregiverTabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: Colors.caregiverNavy,
-    borderTopWidth: 0,
-    height: 60,
-    paddingBottom: 4,
+    backgroundColor: Colors.caregiverBg,
+    borderTopWidth: 1,
+    borderTopColor: Colors.caregiverBorder,
+    height: 64,
+    paddingBottom: 8,
+    paddingTop: 8,
   },
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 6,
   },
-  tabEmoji: { fontSize: 22 },
   tabLabel: {
-    fontFamily: Typography.fontFamily.semiBold,
-    fontSize: 10,
-    marginTop: 2,
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 12,
+    marginTop: 4,
   },
 });
 

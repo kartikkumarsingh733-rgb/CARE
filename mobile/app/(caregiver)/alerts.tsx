@@ -1,17 +1,18 @@
 // Caregiver Alerts tab
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Typography, Spacing, Radius } from '@/constants/theme';
+import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const ALERTS = [
-  { id: '1', emoji: '🆘', title: 'SOS Activated', desc: 'Ramesh tapped I Need Help at 3:42 PM', time: 'Today, 3:42 PM', severity: 'critical', read: false },
-  { id: '2', emoji: '💊', title: 'Medicine Missed', desc: 'Evening medicine not marked as taken', time: 'Today, 8:00 PM', severity: 'warning', read: false },
-  { id: '3', emoji: '🧩', title: 'Game Completed', desc: 'Finished Yaad Rakho — 3/3 correct!', time: 'Today, 11:30 AM', severity: 'info', read: true },
-  { id: '4', emoji: '📅', title: 'Task Done', desc: 'Marked Afternoon Walk as complete', time: 'Today, 4:15 PM', severity: 'info', read: true },
+  { id: '1', icon: 'emergency', title: 'SOS Activated', desc: 'Ramesh tapped I Need Help at 3:42 PM', time: 'Today, 3:42 PM', severity: 'critical', read: false },
+  { id: '2', icon: 'medication', title: 'Medicine Missed', desc: 'Evening medicine not marked as taken', time: 'Today, 8:00 PM', severity: 'warning', read: false },
+  { id: '3', icon: 'sports-esports', title: 'Game Completed', desc: 'Finished Yaad Rakho — 3/3 correct!', time: 'Today, 11:30 AM', severity: 'info', read: true },
+  { id: '4', icon: 'check-circle', title: 'Task Done', desc: 'Marked Afternoon Walk as complete', time: 'Today, 4:15 PM', severity: 'info', read: true },
 ];
 
 const SEVERITY_COLORS: Record<string, string> = {
-  critical: Colors.alertRed,
+  critical: Colors.caregiverAccent,
   warning: Colors.alertYellow,
   info: Colors.successTeal,
 };
@@ -23,7 +24,21 @@ export default function AlertsScreen() {
         <Text style={styles.title}>Alerts</Text>
         <Text style={styles.subtitle}>2 unread notifications</Text>
       </View>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      
+      {/* Quick Filters */}
+      <View style={styles.filtersContainer}>
+        <TouchableOpacity style={[styles.filterChip, styles.filterChipActive]}>
+          <Text style={[styles.filterText, styles.filterTextActive]}>All</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterChip}>
+          <Text style={styles.filterText}>Unread (2)</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterChip}>
+          <Text style={styles.filterText}>Critical</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {ALERTS.map((alert) => (
           <TouchableOpacity
             key={alert.id}
@@ -33,7 +48,9 @@ export default function AlertsScreen() {
               !alert.read && styles.unread,
             ]}
           >
-            <Text style={styles.alertEmoji}>{alert.emoji}</Text>
+            <View style={[styles.alertIconBg, { backgroundColor: SEVERITY_COLORS[alert.severity] + '15' }]}>
+              <MaterialIcons name={alert.icon as any} size={24} color={SEVERITY_COLORS[alert.severity]} />
+            </View>
             <View style={styles.alertInfo}>
               <Text style={styles.alertTitle}>{alert.title}</Text>
               <Text style={styles.alertDesc}>{alert.desc}</Text>
@@ -48,59 +65,102 @@ export default function AlertsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.caregiverNavy },
+  safe: { flex: 1, backgroundColor: Colors.caregiverSecondary },
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.lg,
+    paddingHorizontal: 16,
+    paddingTop: 32,
+    paddingBottom: 16,
+    backgroundColor: Colors.caregiverBg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.caregiverBorder,
   },
   title: {
-    fontFamily: Typography.fontFamily.display,
-    fontSize: Typography.size.xxl,
-    color: Colors.textOnDark,
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 24,
+    color: Colors.caregiverText,
   },
   subtitle: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: Typography.size.sm,
-    color: 'rgba(255,255,255,0.5)',
-    marginTop: 2,
+    fontSize: 16,
+    color: Colors.caregiverTextMuted,
+    marginTop: 4,
   },
-  scroll: { paddingHorizontal: Spacing.lg, paddingBottom: 80, gap: Spacing.sm },
+  filtersContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: Colors.caregiverBg,
+    borderWidth: 1,
+    borderColor: Colors.caregiverBorder,
+  },
+  filterChipActive: {
+    backgroundColor: Colors.caregiverPrimary + '15',
+    borderColor: Colors.caregiverPrimary,
+  },
+  filterText: {
+    fontFamily: Typography.fontFamily.semiBold,
+    fontSize: 14,
+    color: Colors.caregiverTextMuted,
+  },
+  filterTextActive: {
+    color: Colors.caregiverPrimary,
+  },
+  scroll: { paddingHorizontal: 16, paddingBottom: 80, gap: 12 },
   alertCard: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.caregiverNavyLight,
-    borderRadius: Radius.md,
+    alignItems: 'flex-start',
+    backgroundColor: Colors.caregiverCardBg,
+    borderRadius: 8,
     borderLeftWidth: 4,
-    padding: Spacing.lg,
-    gap: Spacing.md,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderTopColor: Colors.caregiverBorder,
+    borderRightColor: Colors.caregiverBorder,
+    borderBottomColor: Colors.caregiverBorder,
+    padding: 16,
+    gap: 16,
+    ...Shadow.caregiverCard,
   },
-  unread: { backgroundColor: 'rgba(30,45,74,0.9)' },
-  alertEmoji: { fontSize: 28 },
+  unread: { backgroundColor: '#FAFAFA' },
+  alertIconBg: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   alertInfo: { flex: 1 },
   alertTitle: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.md,
-    color: Colors.textOnDark,
+    fontSize: 16,
+    color: Colors.caregiverText,
   },
   alertDesc: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: Typography.size.sm,
-    color: 'rgba(255,255,255,0.65)',
-    marginTop: 2,
-    lineHeight: 18,
+    fontSize: 14,
+    color: Colors.caregiverTextMuted,
+    marginTop: 4,
+    lineHeight: 20,
   },
   alertTime: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: Typography.size.xs,
-    color: 'rgba(255,255,255,0.35)',
-    marginTop: 4,
+    fontSize: 12,
+    color: Colors.caregiverTextMuted,
+    marginTop: 8,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     flexShrink: 0,
+    marginTop: 6,
   },
 });
 

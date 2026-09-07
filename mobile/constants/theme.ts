@@ -49,9 +49,15 @@ export const Colors = {
   borderMedium: '#1C1E1B',
   borderGold: '#A67C52',
 
-  // ─── Caregiver Mode ───────────────────────────────────────────────────────
-  caregiverNavy: '#1E3D52',
-  caregiverNavyLight: '#3B6B8A',
+  // ─── Caregiver Mode (Material Design Redesign) ────────────────────────────
+  caregiverPrimary: '#1E88E5',   // Blue
+  caregiverSecondary: '#F5F5F5', // Light Gray
+  caregiverAccent: '#FF5252',    // Red
+  caregiverText: '#333333',
+  caregiverTextMuted: '#757575',
+  caregiverBg: '#FFFFFF',
+  caregiverBorder: '#E0E0E0',
+  caregiverCardBg: '#FFFFFF',
 
   // ─── Chat / Companion ─────────────────────────────────────────────────────
   chatGreen: '#2D5A3D',
@@ -133,6 +139,13 @@ export const Shadow = {
     shadowOpacity: 1,
     shadowRadius: 0,
     elevation: 6,
+  },
+  caregiverCard: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
 };
 
