@@ -1,0 +1,61 @@
+- generic [ref=e4]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]: 12:48 pm
+      - generic [ref=e9]: Friday, 28 August
+      - generic [ref=e10]: Good Afternoon, Rameshji
+    - generic [ref=e12]: You are at home. Priya (your daughter) will visit at 5:00 PM today.
+    - generic [ref=e13]:
+      - generic [ref=e14]: WHAT IS NEXT
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - img [ref=e18]
+          - generic [ref=e20]:
+            - generic [ref=e21]: Take Afternoon Medicine
+            - generic [ref=e22]: 1:00 PM — 2 tablets with water
+        - button "Mark as Done" [ref=e23] [cursor=pointer]:
+          - img [ref=e24]
+          - text: Mark as Done
+    - generic [ref=e26]:
+      - generic [ref=e27]: WHAT WOULD YOU LIKE TO DO?
+      - generic [ref=e28]:
+        - button "Play Games Memory · Attention · Patterns" [ref=e29] [cursor=pointer]:
+          - img [ref=e31]
+          - generic [ref=e33]:
+            - generic [ref=e34]: Play Games
+            - generic [ref=e35]: Memory · Attention · Patterns
+          - img [ref=e37]
+        - button "My Day Reminders and today's routine" [ref=e39] [cursor=pointer]:
+          - img [ref=e41]
+          - generic [ref=e43]:
+            - generic [ref=e44]: My Day
+            - generic [ref=e45]: Reminders and today's routine
+          - img [ref=e47]
+        - button "My Memories Family photos and stories" [ref=e49] [cursor=pointer]:
+          - img [ref=e51]
+          - generic [ref=e53]:
+            - generic [ref=e54]: My Memories
+            - generic [ref=e55]: Family photos and stories
+          - img [ref=e57]
+        - button "I Need Help Call family or caregiver" [ref=e59] [cursor=pointer]:
+          - img [ref=e61]
+          - generic [ref=e63]:
+            - generic [ref=e64]: I Need Help
+            - generic [ref=e65]: Call family or caregiver
+          - img [ref=e67]
+  - generic [ref=e69]:
+    - button "Home" [ref=e70] [cursor=pointer]:
+      - img [ref=e71]
+      - generic [ref=e73]: Home
+    - button "Play" [ref=e74] [cursor=pointer]:
+      - img [ref=e75]
+      - generic [ref=e77]: Play
+    - button "My Day" [ref=e78] [cursor=pointer]:
+      - img [ref=e79]
+      - generic [ref=e81]: My Day
+    - button "Memories" [ref=e82] [cursor=pointer]:
+      - img [ref=e83]
+      - generic [ref=e85]: Memories
+    - button "Help" [ref=e86] [cursor=pointer]:
+      - img [ref=e87]
+      - generic [ref=e89]: Help

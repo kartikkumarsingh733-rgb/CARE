@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xl,
   },
   title: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxxl,
     color: Colors.textOnDark,
   },
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   sosBtnText: { fontSize: 40 },
   sosBtnLabel: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.textOnDark,
     marginTop: Spacing.sm,

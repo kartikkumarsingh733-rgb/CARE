@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.xl },
   lockEmoji: { fontSize: 52, marginBottom: Spacing.lg },
   title: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.caregiverNavy,
   },

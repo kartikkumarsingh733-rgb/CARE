@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scoreNum: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxxl,
   },
   scoreOf: {
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   playAgainText: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.lg,
     color: Colors.textOnDark,
   },

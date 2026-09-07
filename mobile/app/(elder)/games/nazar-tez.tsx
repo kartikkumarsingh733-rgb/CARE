@@ -27,7 +27,9 @@ import {
   generateItemId,
   type GameSession,
 } from '@/engine/gameSession';
-import { getDifficultyForDomain } from '@/engine/difficultyEngine';
+import { getDifficultyForDomain, evaluateAndUpdateTier } from '@/engine/difficultyEngine';
+import { insertGameSession } from '@/engine/database';
+import { useAppStore } from '@/store/appStore';
 import { generateSearchRound, type AttentionItem } from '@/engine/gameContent';
 import GameResultModal from '@/components/GameResultModal';
 
@@ -37,7 +39,9 @@ export default function NazarTezGame() {
   const router = useRouter();
   const domain = 'attention';
   const domainData = Domains[domain];
-  const diffParams = getDifficultyForDomain(domain);
+  const currentTier = useAppStore(state => state.domainTiers[domain]);
+  const patientId = useAppStore(state => state.patient.id);
+  const diffParams = getDifficultyForDomain(currentTier);
 
   const [roundIndex, setRoundIndex] = useState(0);
   const [session, setSession] = useState<GameSession>(
@@ -71,7 +75,15 @@ export default function NazarTezGame() {
 
     setTimeout(() => {
       if (isLastRound) {
-        setSession(finalizeSession(updatedSession, diffParams.tier));
+        const finalSession = finalizeSession(updatedSession, currentTier);
+        setSession(finalSession);
+        
+        insertGameSession(finalSession);
+        const { newTier } = evaluateAndUpdateTier(domain, patientId, currentTier);
+        if (newTier !== currentTier) {
+          useAppStore.getState().setDomainTier(domain, newTier);
+        }
+        
         setShowResult(true);
       } else {
         setRoundIndex((i) => i + 1);
@@ -187,6 +199,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.domainAttentionShadow,
+    ...Shadow.card,
+    elevation: 4,
+    zIndex: 10,
   },
   backBtn: { paddingBottom: Spacing.sm },
   backText: {
@@ -195,7 +212,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.85)',
   },
   gameName: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.textOnDark,
   },
@@ -217,13 +234,12 @@ const styles = StyleSheet.create({
   progressBarFill: { height: 4 },
   content: { flex: 1, padding: Spacing.lg },
   targetBox: {
-    borderWidth: 2,
-    borderRadius: Radius.lg,
+    borderWidth: 1,
     padding: Spacing.lg,
     alignItems: 'center',
-    backgroundColor: Colors.bgCard,
+    backgroundColor: Colors.bgCardWarm,
     marginBottom: Spacing.md,
-    ...Shadow.card,
+    ...Shadow.cardStrong,
   },
   targetLabel: {
     fontFamily: Typography.fontFamily.semiBold,
@@ -233,7 +249,7 @@ const styles = StyleSheet.create({
   },
   targetEmoji: { fontSize: 52 },
   targetName: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xl,
     color: Colors.textPrimary,
     marginTop: Spacing.sm,
@@ -245,10 +261,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   feedbackBanner: {
-    borderWidth: 1,
-    borderRadius: Radius.md,
+    borderWidth: 2,
     padding: Spacing.md,
     marginBottom: Spacing.md,
+    ...Shadow.card,
   },
   feedbackText: {
     fontFamily: Typography.fontFamily.semiBold,
@@ -260,13 +276,12 @@ const styles = StyleSheet.create({
   gridTile: {
     width: 95,
     height: 95,
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.md,
+    backgroundColor: Colors.bgCardWarm,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: Colors.borderLight,
-    ...Shadow.card,
+    ...Shadow.cardStrong,
   },
   tileCorrect: { backgroundColor: Colors.successTealLight, borderColor: Colors.successTeal },
   tileWrong: { backgroundColor: Colors.alertRedLight, borderColor: Colors.alertRed },

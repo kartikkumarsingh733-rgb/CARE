@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.lg,
   },
   title: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.textOnDark,
   },

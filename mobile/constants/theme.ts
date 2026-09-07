@@ -1,79 +1,91 @@
 // Design System Tokens for CogniCare NER
-// Extracted from UI design screenshots — do not deviate from these values.
+// Updated to Neubrutalism flat design
 
 export const Colors = {
   // ─── Backgrounds ─────────────────────────────────────────────────────────
-  bgCream: '#FAF7F0',
-  bgCard: '#FFFFFF',
-  bgCardWarm: '#FDF9F2',
+  bgCream: '#FAF3E0', // Cream background from Figma
+  bgCard: '#F3E8D5',  // Tile background
+  bgCardWarm: '#F3E8D5',
 
   // ─── Domain Colors (each game domain has its own identity color) ──────────
-  domainMemory: '#2A6B7C',      // Teal — Yaad Rakho
-  domainAttention: '#7A3020',   // Brown-red — Nazar Tez
-  domainPatterns: '#4A5C1A',    // Olive green — Milan
-  domainRecall: '#6B3FA0',      // Purple — Mera Din
-  domainEmotional: '#1A5276',   // Deep blue — future
+  domainMemory: '#366184',      // Blue
+  domainMemoryShadow: '#1C1E1B',
+  
+  domainAttention: '#366184',
+  domainAttentionShadow: '#1C1E1B',
+  
+  domainLanguage: '#366184',
+  domainLanguageShadow: '#1C1E1B',
+
+  domainComputation: '#366184',
+  domainComputationShadow: '#1C1E1B',
+  
+  domainRecall: '#8C4031',      // Rust Red
+  domainRecallShadow: '#1C1E1B',
+
+  domainMemories: '#586C32',    // Olive Green
+  domainHelp: '#AA3024',        // Crimson Red
 
   // ─── Accent / Status ──────────────────────────────────────────────────────
-  gold: '#C4922A',
-  goldLight: '#F5E6C8',
-  alertRed: '#C0392B',
-  alertRedLight: '#FADBD8',
+  gold: '#C4822A',
+  goldLight: '#FDF0E0',
+  alertRed: '#8B3A2A',
+  alertRedLight: '#F5E8E5',
   alertYellow: '#E6A817',
   alertYellowLight: '#FEF9E7',
-  successTeal: '#2A9D8F',
-  successTealLight: '#D5F5F0',
+  successTeal: '#2D5A3D',
+  successTealLight: '#E8F0EB',
 
   // ─── Text ─────────────────────────────────────────────────────────────────
-  textPrimary: '#1A1A1A',
-  textSecondary: '#6B6B6B',
-  textMuted: '#9B9B9B',
-  textLink: '#2A6B9C',
+  textPrimary: '#1C1008',       // Darkest brown/black
+  textSecondary: '#4A3828',
+  textMuted: '#6B4C35',
+  textLink: '#3B6B8A',
   textOnDark: '#FFFFFF',
-  textHindi: '#5B4A3A',  // Warm brown for Hindi subtitles
+  textHindi: '#9B8070',  
 
   // ─── Borders ──────────────────────────────────────────────────────────────
-  borderLight: '#E8E0D4',
-  borderMedium: '#C8BCA8',
-  borderGold: '#C4922A',
+  borderLight: '#1C1E1B',
+  borderMedium: '#1C1E1B',
+  borderGold: '#A67C52',
 
   // ─── Caregiver Mode ───────────────────────────────────────────────────────
-  caregiverNavy: '#1A2340',
-  caregiverNavyLight: '#1E2D4A',
+  caregiverNavy: '#1E3D52',
+  caregiverNavyLight: '#3B6B8A',
 
   // ─── Chat / Companion ─────────────────────────────────────────────────────
-  chatGreen: '#2A5C3A',
-  chatGreenLight: '#EAF5ED',
+  chatGreen: '#2D5A3D',
+  chatGreenLight: '#E8F0EB',
 
   // ─── Interactive States ───────────────────────────────────────────────────
-  tileSelected: '#FFF3DC',
-  tileCorrect: '#D5F5F0',
-  tileWrong: '#FADBD8',
+  tileSelected: '#FDF0E0',
+  tileCorrect: '#E8F0EB',
+  tileWrong: '#F5E8E5',
   tileDefault: '#FFFFFF',
-  disabled: '#C8C8C8',
+  disabled: '#C8AB8A',
 
   // ─── Tab Bar ──────────────────────────────────────────────────────────────
-  tabBarBg: '#1A1A0F',
-  tabBarActive: '#C4922A',
-  tabBarInactive: '#8A8A7A',
+  tabBarBg: '#23170E',
+  tabBarActive: '#324B3B', // Dark green for active tab
+  tabBarInactive: '#A0AAB2',
 };
 
 export const Typography = {
   // Font family (loaded via expo-font / useFonts)
   fontFamily: {
-    regular: 'Nunito_400Regular',
-    semiBold: 'Nunito_600SemiBold',
-    bold: 'Nunito_700Bold',
-    extraBold: 'Nunito_800ExtraBold',
+    regular: 'IBMPlexSans_400Regular',
+    semiBold: 'IBMPlexSans_600SemiBold',
+    bold: 'AtkinsonHyperlegible_700Bold',
+    display: 'AtkinsonHyperlegible_700Bold',
   },
 
-  // Size scale (sp-equivalent) — 18sp baseline per PRD §5(h)
+  // Size scale
   size: {
-    xs: 13,
-    sm: 15,
-    md: 17,
-    lg: 20,
-    xl: 24,
+    xs: 15, // Bumped minimum sizes for accessibility
+    sm: 17,
+    md: 19,
+    lg: 22,
+    xl: 26,
     xxl: 28,
     xxxl: 32,
   },
@@ -81,8 +93,8 @@ export const Typography = {
   // Line heights
   lineHeight: {
     tight: 1.2,
-    normal: 1.45,
-    relaxed: 1.6,
+    normal: 1.4,
+    relaxed: 1.5,
   },
 };
 
@@ -97,42 +109,44 @@ export const Spacing = {
   section: 40,
 };
 
+// Neubrutalism typically has small or zero border radii
 export const Radius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
+  sm: 0,
+  md: 0,
+  lg: 4,
+  xl: 8,
   pill: 100,
   circle: 9999,
 };
 
 export const Shadow = {
   card: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#1C1E1B',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4, // Android fallback
   },
   cardStrong: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    shadowColor: '#1A3322', // Dark green shadow for Up Next
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
     elevation: 6,
   },
 };
 
-// Minimum tap target — 48×48dp per PRD §5(h)
+// Minimum tap target
 export const MIN_TAP_TARGET = 48;
 
-// Domain metadata — single source of truth for all game domain colors/labels
+// Domain metadata
 export const Domains = {
   memory: {
     key: 'memory',
     label: 'Memory',
     hindiLabel: 'याद रखो',
     color: Colors.domainMemory,
+    shadow: Colors.domainMemoryShadow,
     icon: '🧠',
   },
   attention: {
@@ -140,6 +154,7 @@ export const Domains = {
     label: 'Attention',
     hindiLabel: 'नज़र तेज़',
     color: Colors.domainAttention,
+    shadow: Colors.domainAttentionShadow,
     icon: '👁️',
   },
   patterns: {
@@ -147,6 +162,7 @@ export const Domains = {
     label: 'Patterns',
     hindiLabel: 'मिलान',
     color: Colors.domainPatterns,
+    shadow: Colors.domainPatternsShadow,
     icon: '🔍',
   },
   recall: {
@@ -154,6 +170,7 @@ export const Domains = {
     label: 'Daily Recall',
     hindiLabel: 'मेरा दिन',
     color: Colors.domainRecall,
+    shadow: Colors.domainRecallShadow,
     icon: '🌅',
   },
 } as const;

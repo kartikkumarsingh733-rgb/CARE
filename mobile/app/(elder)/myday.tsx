@@ -8,42 +8,22 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import FloatingChatButton from '@/components/FloatingChatButton';
-
-interface ScheduleItem {
-  id: string;
-  time: string;
-  title: string;
-  subtitle: string;
-  emoji: string;
-  color: string;
-  done: boolean;
-  isNext?: boolean;
-}
-
-const INITIAL_SCHEDULE: ScheduleItem[] = [
-  { id: '1', time: '8:00 AM',  title: 'Morning Medicine', subtitle: '2 tablets with water',       emoji: '💊', color: Colors.domainAttention, done: true  },
-  { id: '2', time: '9:00 AM',  title: 'Breakfast',        subtitle: 'Idli and sambar',            emoji: '🍽️', color: Colors.domainPatterns,  done: true  },
-  { id: '3', time: '11:00 AM', title: 'Drink Water',      subtitle: 'A full glass of water',      emoji: '💧', color: Colors.textLink,         done: true  },
-  { id: '4', time: '1:00 PM',  title: 'Afternoon Medicine', subtitle: '2 tablets with water',    emoji: '💊', color: Colors.domainAttention, done: false, isNext: true },
-  { id: '5', time: '1:30 PM',  title: 'Lunch',            subtitle: 'Dal, rice and sabzi',        emoji: '🍛', color: Colors.domainPatterns,  done: false },
-  { id: '6', time: '4:00 PM',  title: 'Evening Walk',     subtitle: '15 minutes in the garden',  emoji: '🚶', color: Colors.successTeal,      done: false },
-  { id: '7', time: '5:00 PM',  title: 'Priya Visits',     subtitle: 'Your daughter will come home', emoji: '👨‍👩‍👧', color: Colors.domainPatterns, done: false },
-  { id: '8', time: '9:00 PM',  title: 'Night Medicine',   subtitle: '1 tablet before sleep',     emoji: '💊', color: Colors.domainAttention, done: false },
-];
+import { useAppStore, Reminder } from '@/store/appStore';
+import { NotificationService } from '@/services/NotificationService';
 
 const TASK_CATEGORIES = [
-  { label: 'Medicine',       emoji: '💊' },
-  { label: 'Meal',           emoji: '🍽️' },
-  { label: 'Drink Water',    emoji: '💧' },
-  { label: 'Walk',           emoji: '🚶' },
-  { label: 'Doctor Visit',   emoji: '⭐' },
-  { label: 'Temple / Prayer', emoji: '🛕' },
-  { label: 'Call Family',    emoji: '📞' },
-  { label: 'Rest / Nap',     emoji: '🛌' },
+  { label: 'Medicine',       emoji: '💊', color: '#1B263B' },
+  { label: 'Meal',           emoji: '🍽️', color: '#E07A5F' },
+  { label: 'Drink Water',    emoji: '💧', color: '#005F73' },
+  { label: 'Walk',           emoji: '🚶', color: Colors.successTeal },
+  { label: 'Doctor Visit',   emoji: '⭐', color: Colors.domainAttention },
+  { label: 'Temple / Prayer', emoji: '🛕', color: Colors.domainPatterns },
+  { label: 'Call Family',    emoji: '📞', color: Colors.domainMemory },
+  { label: 'Rest / Nap',     emoji: '🛌', color: Colors.textMuted },
 ];
 
 const TIME_SLOTS = [
@@ -52,20 +32,55 @@ const TIME_SLOTS = [
   { label: 'Afternoon', time: '3:00 PM'  },
   { label: 'Evening',   time: '6:00 PM'  },
   { label: 'Night',     time: '9:00 PM'  },
+  { label: 'Test Now',  time: 'In 10 sec' },
 ];
 
 export default function MyDayScreen() {
-  const [schedule, setSchedule] = useState<ScheduleItem[]>(INITIAL_SCHEDULE);
+  const { reminders, toggleReminderDone, addReminder } = useAppStore();
   const [showAddTask, setShowAddTask] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<typeof TASK_CATEGORIES[0] | null>(null);
+  const [selectedTime, setSelectedTime] = useState<typeof TIME_SLOTS[0] | null>(null);
 
-  const toggleDone = (id: string) => {
-    setSchedule((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, done: !item.done } : item
-      )
-    );
+  useEffect(() => {
+    // Request permissions when the screen loads
+    NotificationService.requestPermissionsAsync();
+  }, []);
+
+  const handleAddReminder = async () => {
+    if (!selectedCategory || !selectedTime) return;
+
+    let notificationId: string | undefined;
+
+    if (selectedTime.label === 'Test Now') {
+      notificationId = await NotificationService.scheduleReminderInSeconds(
+        selectedCategory.label,
+        'Time to do your task!',
+        10,
+        { category: selectedCategory.label }
+      );
+    } else {
+      // In a real app, parse `selectedTime.time` to the actual Date object
+      // For now, we'll schedule it for 2 minutes from now as a demo if not 'Test Now'
+      notificationId = await NotificationService.scheduleReminderInSeconds(
+        selectedCategory.label,
+        'Time for your scheduled task!',
+        120, // 2 mins
+        { category: selectedCategory.label }
+      );
+    }
+
+    addReminder({
+      title: selectedCategory.label,
+      subtitle: `Scheduled for ${selectedTime.label}`,
+      time: selectedTime.time,
+      emoji: selectedCategory.emoji,
+      color: selectedCategory.color,
+      notificationId,
+    });
+
+    setShowAddTask(false);
+    setSelectedCategory(null);
+    setSelectedTime(null);
   };
 
   const today = new Date().toLocaleDateString('en-IN', {
@@ -89,10 +104,10 @@ export default function MyDayScreen() {
       >
         <Text style={styles.sectionLabel}>TODAY'S SCHEDULE</Text>
 
-        {schedule.map((item) => (
+        {reminders.map((item) => (
           <TouchableOpacity
             key={item.id}
-            onPress={() => toggleDone(item.id)}
+            onPress={() => toggleReminderDone(item.id)}
             activeOpacity={0.8}
             style={[
               styles.scheduleRow,
@@ -158,17 +173,6 @@ export default function MyDayScreen() {
           <View style={styles.modalSheet}>
             <Text style={styles.modalTitle}>Add a Task</Text>
 
-            {/* Voice button */}
-            <TouchableOpacity style={styles.speakBtn}>
-              <Text style={styles.speakBtnText}>🎤  Speak Your Task</Text>
-            </TouchableOpacity>
-
-            <View style={styles.orDivider}>
-              <View style={styles.divLine} />
-              <Text style={styles.orText}>OR CHOOSE A TASK</Text>
-              <View style={styles.divLine} />
-            </View>
-
             {/* Category grid */}
             <View style={styles.categoryGrid}>
               {TASK_CATEGORIES.map((cat) => (
@@ -176,9 +180,9 @@ export default function MyDayScreen() {
                   key={cat.label}
                   style={[
                     styles.catTile,
-                    selectedCategory === cat.label && styles.catTileSelected,
+                    selectedCategory?.label === cat.label && styles.catTileSelected,
                   ]}
-                  onPress={() => setSelectedCategory(cat.label)}
+                  onPress={() => setSelectedCategory(cat)}
                 >
                   <Text style={styles.catEmoji}>{cat.emoji}</Text>
                   <Text style={styles.catLabel}>{cat.label}</Text>
@@ -192,9 +196,9 @@ export default function MyDayScreen() {
                 key={slot.label}
                 style={[
                   styles.timeSlot,
-                  selectedTime === slot.label && styles.timeSlotSelected,
+                  selectedTime?.label === slot.label && styles.timeSlotSelected,
                 ]}
-                onPress={() => setSelectedTime(slot.label)}
+                onPress={() => setSelectedTime(slot)}
               >
                 <Text style={styles.timeSlotLabel}>{slot.label}</Text>
                 <Text style={styles.timeSlotTime}>{slot.time}</Text>
@@ -204,12 +208,7 @@ export default function MyDayScreen() {
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.addBtn}
-                onPress={() => {
-                  // TODO: add item to schedule
-                  setShowAddTask(false);
-                  setSelectedCategory(null);
-                  setSelectedTime(null);
-                }}
+                onPress={handleAddReminder}
               >
                 <Text style={styles.addBtnText}>✓  Add to My Day</Text>
               </TouchableOpacity>
@@ -236,16 +235,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.xl,
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.borderLight,
   },
   title: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxxl,
     color: Colors.textOnDark,
   },
   date: {
     fontFamily: Typography.fontFamily.regular,
     fontSize: Typography.size.sm,
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(255,255,255,0.9)',
     marginTop: 4,
   },
   scroll: { paddingHorizontal: Spacing.lg, paddingBottom: 80 },
@@ -260,38 +261,40 @@ const styles = StyleSheet.create({
   scheduleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.md,
-    borderWidth: 1,
+    backgroundColor: Colors.bgCardWarm,
+    borderWidth: 2,
     borderColor: Colors.borderLight,
     padding: Spacing.md,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
     gap: Spacing.md,
+    ...Shadow.card,
+    shadowOffset: { width: 3, height: 3 },
   },
   scheduleRowNext: {
-    borderColor: Colors.gold,
+    borderColor: Colors.domainPatterns,
     borderWidth: 2,
-    backgroundColor: Colors.goldLight,
+    backgroundColor: Colors.domainPatternsShadow,
   },
   timeText: {
     fontFamily: Typography.fontFamily.semiBold,
-    fontSize: Typography.size.xs,
+    fontSize: Typography.size.sm,
     color: Colors.textSecondary,
-    width: 58,
+    width: 65,
   },
   iconSquare: {
-    width: 40,
-    height: 40,
-    borderRadius: Radius.sm,
+    width: 44,
+    height: 44,
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkmark: { fontSize: 18, color: Colors.textOnDark },
-  rowEmoji: { fontSize: 20 },
+  checkmark: { fontSize: 20, color: Colors.textOnDark },
+  rowEmoji: { fontSize: 24 },
   rowInfo: { flex: 1 },
   rowTitle: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.md,
+    fontFamily: Typography.fontFamily.display,
+    fontSize: Typography.size.lg,
     color: Colors.textPrimary,
   },
   rowSubtitle: {
@@ -305,126 +308,107 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
   },
   nextBadge: {
-    backgroundColor: Colors.gold,
-    borderRadius: Radius.pill,
+    backgroundColor: Colors.domainPatterns,
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
+    paddingVertical: 4,
   },
   nextBadgeText: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: 10,
+    fontSize: 12,
     color: Colors.textOnDark,
   },
   addTaskBtn: {
     marginTop: Spacing.lg,
-    borderWidth: 1.5,
-    borderColor: Colors.gold,
-    borderStyle: 'dashed',
-    borderRadius: Radius.md,
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
+    backgroundColor: Colors.domainPatterns,
     paddingVertical: Spacing.lg,
     alignItems: 'center',
+    ...Shadow.card,
+    shadowOffset: { width: 3, height: 3 },
   },
   addTaskText: {
-    fontFamily: Typography.fontFamily.semiBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.md,
-    color: Colors.gold,
+    color: Colors.textOnDark,
   },
-  // Modal
+  // Modal (Neubrutalism styled)
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   modalSheet: {
     backgroundColor: Colors.bgCream,
-    borderTopLeftRadius: Radius.xl,
-    borderTopRightRadius: Radius.xl,
+    borderTopWidth: 4,
+    borderLeftWidth: 4,
+    borderRightWidth: 4,
+    borderColor: Colors.borderLight,
     padding: Spacing.lg,
     paddingBottom: 40,
     maxHeight: '90%',
   },
   modalTitle: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.xl,
+    fontFamily: Typography.fontFamily.display,
+    fontSize: Typography.size.xxl,
     color: Colors.textPrimary,
     marginBottom: Spacing.lg,
-  },
-  speakBtn: {
-    backgroundColor: Colors.textPrimary,
-    borderRadius: Radius.md,
-    paddingVertical: Spacing.md,
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-  },
-  speakBtnText: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.md,
-    color: Colors.textOnDark,
-  },
-  orDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: Spacing.sm,
-    gap: Spacing.sm,
-  },
-  divLine: { flex: 1, height: 1, backgroundColor: Colors.borderLight },
-  orText: {
-    fontFamily: Typography.fontFamily.semiBold,
-    fontSize: Typography.size.xs,
-    color: Colors.textSecondary,
-    letterSpacing: 1,
   },
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
-    marginVertical: Spacing.md,
+    marginVertical: Spacing.sm,
   },
   catTile: {
-    width: '47%',
+    width: '48%',
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.borderLight,
-    borderRadius: Radius.md,
     padding: Spacing.md,
-    backgroundColor: Colors.bgCard,
+    backgroundColor: Colors.bgCardWarm,
+    ...Shadow.card,
+    shadowOffset: { width: 2, height: 2 },
   },
   catTileSelected: {
-    borderColor: Colors.gold,
-    backgroundColor: Colors.goldLight,
+    backgroundColor: Colors.domainPatterns,
+    shadowOffset: { width: 0, height: 0 },
   },
-  catEmoji: { fontSize: 20 },
+  catEmoji: { fontSize: 24 },
   catLabel: {
-    fontFamily: Typography.fontFamily.semiBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.sm,
     color: Colors.textPrimary,
   },
   whenLabel: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.xs,
+    fontSize: Typography.size.sm,
     color: Colors.textSecondary,
     letterSpacing: 1.2,
-    marginTop: Spacing.sm,
+    marginTop: Spacing.lg,
     marginBottom: Spacing.sm,
   },
   timeSlot: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.borderLight,
-    borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
-    backgroundColor: Colors.bgCard,
+    backgroundColor: Colors.bgCardWarm,
+    ...Shadow.card,
+    shadowOffset: { width: 2, height: 2 },
   },
   timeSlotSelected: {
-    borderColor: Colors.successTeal,
-    backgroundColor: Colors.successTealLight,
+    backgroundColor: Colors.domainAttention,
+    shadowOffset: { width: 0, height: 0 },
   },
   timeSlotLabel: {
-    fontFamily: Typography.fontFamily.semiBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.md,
     color: Colors.textPrimary,
   },
@@ -435,34 +419,39 @@ const styles = StyleSheet.create({
   },
   modalActions: {
     flexDirection: 'row',
-    gap: Spacing.sm,
-    marginTop: Spacing.md,
+    gap: Spacing.md,
+    marginTop: Spacing.xl,
   },
   addBtn: {
     flex: 1,
     backgroundColor: Colors.successTeal,
-    borderRadius: Radius.md,
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
     paddingVertical: Spacing.md,
     alignItems: 'center',
+    ...Shadow.card,
+    shadowOffset: { width: 3, height: 3 },
   },
   addBtnText: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.md,
     color: Colors.textOnDark,
   },
   cancelBtn: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: Colors.borderMedium,
-    borderRadius: Radius.md,
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
     paddingVertical: Spacing.md,
     alignItems: 'center',
     backgroundColor: Colors.bgCard,
+    ...Shadow.card,
+    shadowOffset: { width: 3, height: 3 },
   },
   cancelBtnText: {
-    fontFamily: Typography.fontFamily.semiBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.md,
-    color: Colors.textSecondary,
+    color: Colors.textPrimary,
   },
 });
+
 

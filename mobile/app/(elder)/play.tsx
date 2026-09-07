@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import { Domains, type DomainKey } from '@/constants/theme';
 import { getDifficultyLabel } from '@/engine/difficultyEngine';
+import { useAppStore } from '@/store/appStore';
 import FloatingChatButton from '@/components/FloatingChatButton';
 
 interface GameCardProps {
@@ -25,10 +26,11 @@ interface GameCardProps {
 function GameCard({ domain, gameName, hindiName, description, route }: GameCardProps) {
   const router = useRouter();
   const domainData = Domains[domain];
-  const difficultyLabel = getDifficultyLabel(domain);
+  const tier = useAppStore(state => state.domainTiers[domain]);
+  const difficultyLabel = getDifficultyLabel(tier);
 
   return (
-    <View style={[styles.card, { borderLeftColor: domainData.color }]}>
+    <View style={[styles.card, { borderColor: domainData.color, shadowColor: domainData.shadow }]}>
       <View style={styles.cardHeader}>
         <View style={[styles.iconBox, { backgroundColor: domainData.color }]}>
           <Text style={styles.iconEmoji}>{domainData.icon}</Text>
@@ -39,13 +41,13 @@ function GameCard({ domain, gameName, hindiName, description, route }: GameCardP
             {hindiName} · {domainData.label}
           </Text>
           <Text style={styles.gameDesc}>{description}</Text>
-          <View style={styles.diffBadge}>
-            <Text style={styles.diffText}>{difficultyLabel}</Text>
+          <View style={[styles.diffBadge, { borderColor: domainData.color }]}>
+            <Text style={[styles.diffText, { color: domainData.color }]}>{difficultyLabel}</Text>
           </View>
         </View>
       </View>
       <TouchableOpacity
-        style={[styles.playBtn, { backgroundColor: domainData.color }]}
+        style={[styles.playBtn, { backgroundColor: domainData.color, borderTopColor: domainData.color }]}
         onPress={() => router.push(route as any)}
         activeOpacity={0.85}
       >
@@ -63,7 +65,7 @@ export default function PlayScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={[styles.pageHeader, { backgroundColor: Colors.domainMemory }]}>
+        <View style={[styles.pageHeader, { backgroundColor: Colors.domainMemory, shadowColor: Colors.domainMemoryShadow }]}>
           <Text style={styles.pageTitle}>Let's Play</Text>
           <Text style={styles.pageSubtitle}>
             Choose a game below. Take your time.
@@ -122,9 +124,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E3D52', // Memory Shadow
+    ...Shadow.card, // Add hard shadow to bottom
+    elevation: 4,
+    zIndex: 10,
   },
   pageTitle: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxxl,
     color: Colors.textOnDark,
   },
@@ -138,10 +145,15 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.lg,
     marginTop: Spacing.lg,
     backgroundColor: Colors.successTealLight,
-    borderLeftWidth: 4,
+    borderLeftWidth: 6,
     borderLeftColor: Colors.successTeal,
-    borderRadius: Radius.md,
-    padding: Spacing.md,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: `${Colors.successTeal}44`,
+    padding: Spacing.lg,
+    ...Shadow.card,
+    shadowColor: '#1A3825',
   },
   nudgeText: {
     fontFamily: Typography.fontFamily.semiBold,
@@ -152,14 +164,12 @@ const styles = StyleSheet.create({
   cardsList: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.lg,
-    gap: Spacing.lg,
+    gap: Spacing.xl,
   },
   card: {
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.lg,
-    borderLeftWidth: 4,
-    overflow: 'hidden',
-    ...Shadow.card,
+    backgroundColor: Colors.bgCardWarm,
+    borderWidth: 1,
+    ...Shadow.cardStrong, // 5px hard shadow
   },
   cardHeader: {
     flexDirection: 'row',
@@ -167,17 +177,17 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   iconBox: {
-    width: 52,
-    height: 52,
-    borderRadius: Radius.md,
+    width: 60,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    borderRadius: Radius.sm,
   },
-  iconEmoji: { fontSize: 26 },
+  iconEmoji: { fontSize: 32 },
   cardInfo: { flex: 1 },
   gameName: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.lg,
     color: Colors.textPrimary,
   },
@@ -191,30 +201,30 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamily.regular,
     fontSize: Typography.size.sm,
     color: Colors.textSecondary,
-    marginTop: 4,
+    marginTop: 6,
     lineHeight: 20,
   },
   diffBadge: {
     marginTop: Spacing.sm,
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: Colors.gold,
-    borderRadius: Radius.pill,
+    borderRadius: 2, // Slightly rounded for small badges
     paddingVertical: 2,
     paddingHorizontal: Spacing.sm,
+    backgroundColor: Colors.bgCardWarm,
   },
   diffText: {
     fontFamily: Typography.fontFamily.semiBold,
     fontSize: Typography.size.xs,
-    color: Colors.gold,
   },
   playBtn: {
     paddingVertical: Spacing.md,
     alignItems: 'center',
+    borderTopWidth: 1,
   },
   playBtnText: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.md,
+    fontFamily: Typography.fontFamily.display,
+    fontSize: Typography.size.lg,
     color: Colors.textOnDark,
     letterSpacing: 0.5,
   },

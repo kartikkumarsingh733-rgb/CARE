@@ -28,7 +28,9 @@ import {
   generateItemId,
   type GameSession,
 } from '@/engine/gameSession';
-import { getDifficultyForDomain } from '@/engine/difficultyEngine';
+import { getDifficultyForDomain, evaluateAndUpdateTier } from '@/engine/difficultyEngine';
+import { insertGameSession } from '@/engine/database';
+import { useAppStore } from '@/store/appStore';
 import { ROUTINE_ROUNDS, type RoutineItem } from '@/engine/gameContent';
 import GameResultModal from '@/components/GameResultModal';
 
@@ -36,7 +38,9 @@ export default function MeraDinGame() {
   const router = useRouter();
   const domain = 'recall';
   const domainData = Domains[domain];
-  const diffParams = getDifficultyForDomain(domain);
+  const currentTier = useAppStore(state => state.domainTiers[domain]);
+  const patientId = useAppStore(state => state.patient.id);
+  const diffParams = getDifficultyForDomain(currentTier);
 
   const totalRounds = Math.min(ROUTINE_ROUNDS.length, 3);
   const rounds = ROUTINE_ROUNDS.slice(0, totalRounds);
@@ -89,7 +93,15 @@ export default function MeraDinGame() {
 
     setTimeout(() => {
       if (isLastRound) {
-        setSession(finalizeSession(updatedSession, diffParams.tier));
+        const finalSession = finalizeSession(updatedSession, currentTier);
+        setSession(finalSession);
+        
+        insertGameSession(finalSession);
+        const { newTier } = evaluateAndUpdateTier(domain, patientId, currentTier);
+        if (newTier !== currentTier) {
+          useAppStore.getState().setDomainTier(domain, newTier);
+        }
+        
         setShowResult(true);
       } else {
         const nextRound = rounds[roundIndex + 1];
@@ -241,6 +253,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.domainRecallShadow,
+    ...Shadow.card,
+    elevation: 4,
+    zIndex: 10,
   },
   backBtn: { paddingBottom: Spacing.sm },
   backText: {
@@ -249,7 +266,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.85)',
   },
   gameName: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.textOnDark,
   },
@@ -271,12 +288,14 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.lg, paddingBottom: 60 },
   instructionBox: {
     backgroundColor: Colors.goldLight,
-    borderRadius: Radius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderGold,
+    ...Shadow.card,
   },
   roundTitle: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.lg,
     color: Colors.textPrimary,
     marginBottom: 4,
@@ -288,10 +307,10 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   feedbackBanner: {
-    borderWidth: 1,
-    borderRadius: Radius.md,
+    borderWidth: 2,
     padding: Spacing.md,
     marginBottom: Spacing.lg,
+    ...Shadow.card,
   },
   feedbackText: {
     fontFamily: Typography.fontFamily.semiBold,
@@ -300,7 +319,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   sectionLabel: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xs,
     color: Colors.textSecondary,
     letterSpacing: 1.2,
@@ -316,14 +335,13 @@ const styles = StyleSheet.create({
   seqItem: {
     width: 80,
     minHeight: 90,
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.md,
+    backgroundColor: Colors.bgCardWarm,
     borderWidth: 2,
     borderColor: Colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.sm,
-    ...Shadow.card,
+    ...Shadow.cardStrong,
   },
   seqCorrect: {
     backgroundColor: Colors.successTealLight,
@@ -334,7 +352,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.alertRed,
   },
   seqNumber: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.gold,
     position: 'absolute',
@@ -352,7 +370,6 @@ const styles = StyleSheet.create({
   emptySlot: {
     width: 80,
     minHeight: 90,
-    borderRadius: Radius.md,
     borderWidth: 2,
     borderColor: Colors.borderMedium,
     borderStyle: 'dashed',
@@ -360,7 +377,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptySlotText: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.disabled,
   },
@@ -372,18 +389,17 @@ const styles = StyleSheet.create({
   sourceTile: {
     width: 80,
     minHeight: 90,
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.md,
-    borderWidth: 1,
+    backgroundColor: Colors.bgCardWarm,
+    borderWidth: 2,
     borderColor: Colors.borderLight,
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.sm,
-    ...Shadow.card,
+    ...Shadow.cardStrong,
   },
   sourceTileEmoji: { fontSize: 32 },
   sourceTileLabel: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xs,
     color: Colors.textPrimary,
     textAlign: 'center',
@@ -396,13 +412,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   checkBtn: {
-    borderRadius: Radius.md,
     paddingVertical: Spacing.lg,
     alignItems: 'center',
     marginTop: Spacing.xl,
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
+    ...Shadow.card,
   },
   checkBtnText: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.lg,
     color: Colors.textOnDark,
   },

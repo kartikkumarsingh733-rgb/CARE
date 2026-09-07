@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   mascot: { fontSize: 72, marginBottom: Spacing.lg },
   title: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxxl,
     color: Colors.textPrimary,
   },

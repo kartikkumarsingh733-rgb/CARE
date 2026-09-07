@@ -23,7 +23,9 @@ import {
   generateItemId,
   type GameSession,
 } from '@/engine/gameSession';
-import { getDifficultyForDomain } from '@/engine/difficultyEngine';
+import { getDifficultyForDomain, evaluateAndUpdateTier } from '@/engine/difficultyEngine';
+import { insertGameSession } from '@/engine/database';
+import { useAppStore } from '@/store/appStore';
 import { generateMemoryRound, type MemoryItem } from '@/engine/gameContent';
 import GameResultModal from '@/components/GameResultModal';
 
@@ -33,7 +35,9 @@ export default function YaadRakhoGame() {
   const router = useRouter();
   const domain = 'memory';
   const domainData = Domains[domain];
-  const diffParams = getDifficultyForDomain(domain);
+  const currentTier = useAppStore(state => state.domainTiers[domain]);
+  const patientId = useAppStore(state => state.patient.id);
+  const diffParams = getDifficultyForDomain(currentTier);
 
   const { studyItems, recallQuestions } = generateMemoryRound(diffParams.itemCount <= 4 ? 3 : 4);
   const totalRounds = recallQuestions.length;
@@ -85,7 +89,18 @@ export default function YaadRakhoGame() {
     // Small delay then advance or show result
     setTimeout(() => {
       if (isLastRound) {
-        setSession(finalizeSession(updatedSession, diffParams.tier));
+        const finalSession = finalizeSession(updatedSession, currentTier);
+        setSession(finalSession);
+        
+        // Log to database
+        insertGameSession(finalSession);
+        
+        // Evaluate difficulty rules
+        const { newTier } = evaluateAndUpdateTier(domain, patientId, currentTier);
+        if (newTier !== currentTier) {
+          useAppStore.getState().setDomainTier(domain, newTier);
+        }
+        
         setShowResult(true);
       } else {
         setRoundIndex((i) => i + 1);
@@ -250,6 +265,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.domainMemoryShadow,
+    ...Shadow.card,
+    elevation: 4,
+    zIndex: 10,
   },
   backBtn: { paddingBottom: Spacing.sm },
   backText: {
@@ -258,7 +278,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.85)',
   },
   gameName: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.textOnDark,
   },
@@ -282,21 +302,22 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: 4,
-    borderRadius: 2,
   },
 
   // Study phase
   studyPhase: { flex: 1, padding: Spacing.lg },
   instructionBox: {
     backgroundColor: Colors.goldLight,
-    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderGold,
     padding: Spacing.lg,
     alignItems: 'center',
     marginBottom: Spacing.xl,
+    ...Shadow.card,
   },
   instructionText: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.lg,
+    fontFamily: Typography.fontFamily.display,
+    fontSize: Typography.size.xl,
     color: Colors.textPrimary,
     textAlign: 'center',
   },
@@ -310,12 +331,15 @@ const styles = StyleSheet.create({
   countdownBox: {
     marginTop: Spacing.md,
     backgroundColor: Colors.gold,
-    borderRadius: Radius.pill,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    ...Shadow.card,
+    shadowOffset: { width: 2, height: 2 },
   },
   countdownText: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xl,
     color: Colors.textOnDark,
   },
@@ -327,15 +351,16 @@ const styles = StyleSheet.create({
   },
   studyCard: {
     width: 100,
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.lg,
+    backgroundColor: Colors.bgCardWarm,
     padding: Spacing.md,
     alignItems: 'center',
-    ...Shadow.card,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    ...Shadow.cardStrong,
   },
   studyEmoji: { fontSize: 44 },
   studyLabel: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.sm,
     color: Colors.textPrimary,
     marginTop: Spacing.sm,
@@ -356,13 +381,15 @@ const styles = StyleSheet.create({
   },
   questionBox: {
     backgroundColor: Colors.goldLight,
-    borderRadius: Radius.lg,
     padding: Spacing.lg,
     alignItems: 'center',
     marginBottom: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderGold,
+    ...Shadow.card,
   },
   questionText: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xl,
     color: Colors.textPrimary,
     textAlign: 'center',
@@ -375,10 +402,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   feedbackBanner: {
-    borderRadius: Radius.md,
-    borderWidth: 1,
+    borderWidth: 2,
     padding: Spacing.md,
     marginBottom: Spacing.lg,
+    ...Shadow.card,
   },
   feedbackText: {
     fontFamily: Typography.fontFamily.semiBold,
@@ -393,13 +420,12 @@ const styles = StyleSheet.create({
   },
   optionTile: {
     width: '45%',
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.lg,
+    backgroundColor: Colors.bgCardWarm,
     padding: Spacing.lg,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: Colors.borderLight,
-    ...Shadow.card,
+    ...Shadow.cardStrong,
   },
   tileCorrect: {
     backgroundColor: Colors.successTealLight,
@@ -414,7 +440,7 @@ const styles = StyleSheet.create({
   },
   optionEmoji: { fontSize: 48 },
   optionLabel: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.md,
     color: Colors.textPrimary,
     marginTop: Spacing.sm,

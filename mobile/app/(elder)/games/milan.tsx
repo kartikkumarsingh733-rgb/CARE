@@ -26,7 +26,9 @@ import {
   generateItemId,
   type GameSession,
 } from '@/engine/gameSession';
-import { getDifficultyForDomain } from '@/engine/difficultyEngine';
+import { getDifficultyForDomain, evaluateAndUpdateTier } from '@/engine/difficultyEngine';
+import { insertGameSession } from '@/engine/database';
+import { useAppStore } from '@/store/appStore';
 import { ODD_ONE_OUT_ROUNDS } from '@/engine/gameContent';
 import GameResultModal from '@/components/GameResultModal';
 
@@ -34,7 +36,9 @@ export default function MilanGame() {
   const router = useRouter();
   const domain = 'patterns';
   const domainData = Domains[domain];
-  const diffParams = getDifficultyForDomain(domain);
+  const currentTier = useAppStore(state => state.domainTiers[domain]);
+  const patientId = useAppStore(state => state.patient.id);
+  const diffParams = getDifficultyForDomain(currentTier);
 
   const totalRounds = Math.min(ODD_ONE_OUT_ROUNDS.length, 4);
   const rounds = ODD_ONE_OUT_ROUNDS.slice(0, totalRounds);
@@ -70,7 +74,15 @@ export default function MilanGame() {
 
     setTimeout(() => {
       if (isLastRound) {
-        setSession(finalizeSession(updatedSession, diffParams.tier));
+        const finalSession = finalizeSession(updatedSession, currentTier);
+        setSession(finalSession);
+        
+        insertGameSession(finalSession);
+        const { newTier } = evaluateAndUpdateTier(domain, patientId, currentTier);
+        if (newTier !== currentTier) {
+          useAppStore.getState().setDomainTier(domain, newTier);
+        }
+        
         setShowResult(true);
       } else {
         setRoundIndex((i) => i + 1);
@@ -183,6 +195,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.domainPatternsShadow,
+    ...Shadow.card,
+    elevation: 4,
+    zIndex: 10,
   },
   backBtn: { paddingBottom: Spacing.sm },
   backText: {
@@ -191,7 +208,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.85)',
   },
   gameName: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.textOnDark,
   },
@@ -213,13 +230,15 @@ const styles = StyleSheet.create({
   content: { flex: 1, padding: Spacing.lg, justifyContent: 'center' },
   questionBox: {
     backgroundColor: Colors.goldLight,
-    borderRadius: Radius.lg,
     padding: Spacing.lg,
     alignItems: 'center',
     marginBottom: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderGold,
+    ...Shadow.card,
   },
   questionText: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xl,
     color: Colors.textPrimary,
     textAlign: 'center',
@@ -232,10 +251,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   feedbackBanner: {
-    borderWidth: 1,
-    borderRadius: Radius.md,
+    borderWidth: 2,
     padding: Spacing.md,
     marginBottom: Spacing.lg,
+    ...Shadow.card,
   },
   feedbackText: {
     fontFamily: Typography.fontFamily.semiBold,
@@ -252,13 +271,12 @@ const styles = StyleSheet.create({
   itemTile: {
     width: '46%',
     aspectRatio: 1,
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.xl,
+    backgroundColor: Colors.bgCardWarm,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: Colors.borderLight,
-    ...Shadow.card,
+    ...Shadow.cardStrong,
   },
   tileCorrect: {
     backgroundColor: Colors.successTealLight,
@@ -273,7 +291,7 @@ const styles = StyleSheet.create({
   tileNeutral: { opacity: 0.45 },
   itemEmoji: { fontSize: 52 },
   itemLabel: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.md,
     color: Colors.textPrimary,
     marginTop: Spacing.sm,

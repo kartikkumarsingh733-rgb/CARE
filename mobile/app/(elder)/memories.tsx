@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xl,
   },
   title: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxxl,
     color: Colors.textOnDark,
   },
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   detailEmoji: { fontSize: 72 },
   detailTitle: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
     color: Colors.textPrimary,
     textAlign: 'center',

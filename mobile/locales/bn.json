@@ -1,0 +1,19 @@
+{
+  "greeting_morning": "সুপ্রভাত",
+  "greeting_afternoon": "শুভ অপরাহ্ন",
+  "greeting_evening": "শুভ সন্ধ্যা",
+  "honorific": "জি",
+  "mascot_msg1": "স্মৃতিসাথী আপনার সাথে আছে!",
+  "mascot_msg2": "আপনি আজ কি করতে চান?",
+  "section_activities": "আপনার কার্যকলাপ",
+  "btn_play_games": "গেম খেলুন",
+  "btn_play_sub": "স্মৃতি · মনোযোগ · প্যাটার্ন",
+  "btn_my_day": "আমার দিন",
+  "btn_my_day_sub": "রিমাইন্ডার এবং আজকের রুটিন",
+  "btn_memories": "আমার স্মৃতি",
+  "btn_memories_sub": "পরিবারের ছবি এবং গল্প",
+  "btn_help": "আমার সাহায্য দরকার",
+  "btn_help_sub": "সাহায্যের জন্য কল বা মেসেজ করুন",
+  "switch_caregiver": "কেয়ারগিভার মোডে যান",
+  "voice_listening": "শুনছি..."
+}

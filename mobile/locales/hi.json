@@ -1,0 +1,19 @@
+{
+  "greeting_morning": "सुप्रभात",
+  "greeting_afternoon": "शुभ दोपहर",
+  "greeting_evening": "शुभ संध्या",
+  "honorific": "जी",
+  "mascot_msg1": "स्मृतिसाथी आपके साथ है!",
+  "mascot_msg2": "आज आप क्या करना चाहेंगे?",
+  "section_activities": "आपकी गतिविधियां",
+  "btn_play_games": "खेल खेलें",
+  "btn_play_sub": "स्मृति · ध्यान · पैटर्न",
+  "btn_my_day": "मेरा दिन",
+  "btn_my_day_sub": "रिमाइंडर और आज की दिनचर्या",
+  "btn_memories": "मेरी यादें",
+  "btn_memories_sub": "परिवार की तस्वीरें और कहानियाँ",
+  "btn_help": "मुझे मदद चाहिए",
+  "btn_help_sub": "मदद के लिए कॉल या मैसेज करें",
+  "switch_caregiver": "केयरगिवर मोड पर जाएं",
+  "voice_listening": "सुन रहा हूँ..."
+}

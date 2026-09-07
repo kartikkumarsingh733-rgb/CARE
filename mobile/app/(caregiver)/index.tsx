@@ -1,4 +1,4 @@
-// Caregiver Home — dashboard overview (matches screenshots)
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
-
-const SUMMARY_CARDS = [
-  { label: 'Played Today',    value: '2',      sub: 'games',      color: Colors.domainMemory  },
-  { label: 'Schedule Done',  value: '3/8',    sub: 'tasks',      color: Colors.successTeal   },
-  { label: 'Active Alerts',  value: '1',      sub: 'critical',   color: Colors.alertRed      },
-  { label: 'Last Seen',      value: '2h ago', sub: 'online',     color: Colors.gold          },
-];
+import { useAppStore } from '@/store/appStore';
+import { getRecentSessionsForDomain } from '@/engine/database';
 
 const RECENT_ALERTS = [
   { emoji: '🆘', text: 'Ramesh tapped the SOS button at 3:42 PM',    time: '3:42 PM', color: Colors.alertRed    },
@@ -24,6 +19,31 @@ const RECENT_ALERTS = [
 
 export default function CaregiverHome() {
   const router = useRouter();
+  const patient = useAppStore((state) => state.patient);
+  
+  const [gamesPlayedToday, setGamesPlayedToday] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Calculate how many games were played in the last 24h
+      let total = 0;
+      const domains = ['memory', 'attention', 'patterns', 'recall'] as const;
+      const now = Date.now();
+      
+      for (const d of domains) {
+        const sessions = getRecentSessionsForDomain(d, patient.id, 10);
+        total += sessions.filter(s => (now - (s.endTime || s.startTime)) < 86400000).length;
+      }
+      setGamesPlayedToday(total);
+    }, [patient.id])
+  );
+
+  const SUMMARY_CARDS = [
+    { label: 'Played Today',    value: gamesPlayedToday.toString(), sub: 'games',      color: Colors.domainMemory  },
+    { label: 'Schedule Done',  value: '3/8',    sub: 'tasks',      color: Colors.successTeal   },
+    { label: 'Active Alerts',  value: '1',      sub: 'critical',   color: Colors.alertRed      },
+    { label: 'Last Seen',      value: '2h ago', sub: 'online',     color: Colors.gold          },
+  ];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -32,11 +52,11 @@ export default function CaregiverHome() {
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>Caregiver Dashboard</Text>
-            <Text style={styles.subtitle}>Ramesh Kumar · 78 yrs</Text>
+            <Text style={styles.subtitle}>{patient.name} · {patient.age} yrs</Text>
           </View>
           <TouchableOpacity
             style={styles.elderBtn}
-            onPress={() => router.push('/(elder)')}
+            onPress={() => router.push('/(elder)' as any)}
           >
             <Text style={styles.elderBtnText}>Elder View</Text>
           </TouchableOpacity>
@@ -72,7 +92,7 @@ export default function CaregiverHome() {
         <View style={styles.actionsRow}>
           {[
             { label: 'Add Reminder', emoji: '📅', onPress: () => {} },
-            { label: 'View Sessions', emoji: '📊', onPress: () => {} },
+            { label: 'View Trends', emoji: '📊', onPress: () => router.push('/(caregiver)/trends' as any) },
             { label: 'Add Memory', emoji: '🖼️', onPress: () => {} },
           ].map((a) => (
             <TouchableOpacity
@@ -103,7 +123,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.caregiverNavy,
   },
   title: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xl,
     color: Colors.textOnDark,
   },
@@ -140,7 +160,7 @@ const styles = StyleSheet.create({
     ...Shadow.card,
   },
   summaryValue: {
-    fontFamily: Typography.fontFamily.extraBold,
+    fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxxl,
   },
   summarySub: {

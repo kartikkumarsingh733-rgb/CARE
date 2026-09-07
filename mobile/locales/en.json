@@ -1,0 +1,19 @@
+{
+  "greeting_morning": "Good Morning",
+  "greeting_afternoon": "Good Afternoon",
+  "greeting_evening": "Good Evening",
+  "honorific": "ji",
+  "mascot_msg1": "SmritiSaathi is here with you!",
+  "mascot_msg2": "What would you like to do today?",
+  "section_activities": "YOUR ACTIVITIES",
+  "btn_play_games": "Play Games",
+  "btn_play_sub": "Memory · Attention · Patterns",
+  "btn_my_day": "My Day",
+  "btn_my_day_sub": "Reminders and today's routine",
+  "btn_memories": "My Memories",
+  "btn_memories_sub": "Family photos and stories",
+  "btn_help": "I Need Help",
+  "btn_help_sub": "Call or message for assistance",
+  "switch_caregiver": "Switch to Caregiver Mode",
+  "voice_listening": "Listening..."
+}

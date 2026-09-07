@@ -2,24 +2,29 @@
 // Tab colors use domain gold for active state, dark background
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors, Typography, Spacing } from '@/constants/theme';
 
 function TabIcon({
-  emoji,
+  icon,
   label,
   focused,
 }: {
-  emoji: string;
+  icon: string;
   label: string;
   focused: boolean;
 }) {
   return (
-    <View style={styles.tabItem}>
-      <Text style={styles.tabEmoji}>{emoji}</Text>
+    <View style={[styles.tabItem, focused && styles.tabItemFocused]}>
+      <FontAwesome5 
+        name={icon} 
+        size={22} 
+        color={focused ? '#FFFFFF' : '#D4C5B9'} 
+      />
       <Text
         style={[
           styles.tabLabel,
-          { color: focused ? Colors.tabBarActive : Colors.tabBarInactive },
+          { color: focused ? '#FFFFFF' : '#D4C5B9' },
         ]}
       >
         {label}
@@ -41,7 +46,7 @@ export default function ElderTabLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="🏠" label="Home" focused={focused} />
+            <TabIcon icon="home" label="Home" focused={focused} />
           ),
         }}
       />
@@ -49,7 +54,7 @@ export default function ElderTabLayout() {
         name="play"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="🧩" label="Play" focused={focused} />
+            <TabIcon icon="puzzle-piece" label="Play" focused={focused} />
           ),
         }}
       />
@@ -57,7 +62,7 @@ export default function ElderTabLayout() {
         name="myday"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="📅" label="My Day" focused={focused} />
+            <TabIcon icon="calendar-alt" label="My Day" focused={focused} />
           ),
         }}
       />
@@ -65,7 +70,7 @@ export default function ElderTabLayout() {
         name="memories"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="🖼️" label="Memories" focused={focused} />
+            <TabIcon icon="image" label="Memories" focused={focused} />
           ),
         }}
       />
@@ -73,33 +78,40 @@ export default function ElderTabLayout() {
         name="help"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="❓" label="Help" focused={focused} />
+            <TabIcon icon="exclamation-circle" label="Help" focused={focused} />
           ),
         }}
       />
+      {/* Hide game screens from the tab bar */}
+      <Tabs.Screen name="games/mera-din" options={{ href: null }} />
+      <Tabs.Screen name="games/milan" options={{ href: null }} />
+      <Tabs.Screen name="games/nazar-tez" options={{ href: null }} />
+      <Tabs.Screen name="games/yaad-rakho" options={{ href: null }} />
     </Tabs>
   );
 }
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: Colors.tabBarBg,
+    backgroundColor: '#2C1E14', // Lighter brown
     borderTopWidth: 0,
-    height: 60,
-    paddingBottom: 4,
+    height: 70,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
   },
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 6,
+    height: '100%',
+    width: '100%',
   },
-  tabEmoji: {
-    fontSize: 22,
+  tabItemFocused: {
+    backgroundColor: '#24402E', // Active green background from header
   },
   tabLabel: {
-    fontFamily: Typography.fontFamily.semiBold,
-    fontSize: Typography.size.xs,
-    marginTop: 2,
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 13,
+    marginTop: 4,
   },
 });
 

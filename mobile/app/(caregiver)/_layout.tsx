@@ -61,6 +61,14 @@ export default function CaregiverTabLayout() {
         }}
       />
       <Tabs.Screen
+        name="trends"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon emoji="📈" label="Trends" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="access"
         options={{
           tabBarIcon: ({ focused }) => (
