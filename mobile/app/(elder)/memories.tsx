@@ -1,145 +1,207 @@
-// Memories Tab — family photo album (PRD §5f)
-// Stage 1: uses placeholder memory cards. Stage 5 loads from Cloudflare R2.
+// Memories Tab — Contacts and Important Information
+import { useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
-  Modal,
-  Dimensions,
+  Image,
+  Animated,
 } from 'react-native';
-import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import FloatingChatButton from '@/components/FloatingChatButton';
+import { audioService } from '@/services/AudioService';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - Spacing.lg * 2 - Spacing.md) / 2;
-
-interface MemoryCard {
-  id: string;
-  title: string;
-  description: string;
-  emoji: string;
-  color: string;
-  category: string;
-}
-
-const MEMORY_CARDS: MemoryCard[] = [
-  { id: '1', title: 'Priya\'s Wedding', description: 'February 12, 2019',       emoji: '💒', color: Colors.domainRecall,    category: 'Family' },
-  { id: '2', title: 'Varanasi Trip',   description: 'October 2022',             emoji: '🕌', color: Colors.domainMemory,    category: 'Travel' },
-  { id: '3', title: 'Grandson Arjun',  description: 'Born March 15, 2021',     emoji: '👶', color: Colors.gold,            category: 'Family' },
-  { id: '4', title: 'Diwali 2023',     description: 'With the whole family',    emoji: '🪔', color: Colors.alertYellow,     category: 'Festival' },
-  { id: '5', title: 'Old Home',        description: 'Our home in Lucknow',      emoji: '🏡', color: Colors.domainAttention, category: 'Home' },
-  { id: '6', title: 'Rohan\'s Birthday', description: 'June 4, 2023',          emoji: '🎂', color: Colors.domainPatterns,  category: 'Family' },
+// Contact Data
+const CONTACTS = [
+  {
+    id: '1',
+    name: 'Priya',
+    relation: 'Your Daughter',
+    description: 'She lives nearby and visits every evening.',
+    imageUrl: 'https://i.pravatar.cc/150?img=47', 
+    btnColor: '#2B5336', 
+    phone: 'Call Priya',
+  },
+  {
+    id: '2',
+    name: 'Suresh',
+    relation: 'Your Son',
+    description: 'He lives in Pune. He calls you every Sunday morning.',
+    imageUrl: 'https://i.pravatar.cc/150?img=11',
+    btnColor: '#3B627A',
+    phone: 'Call Suresh',
+  },
+  {
+    id: '3',
+    name: 'Kavya',
+    relation: 'Your Granddaughter',
+    description: "Priya's daughter. She is 8 years old and loves drawing.",
+    imageUrl: 'https://i.pravatar.cc/150?img=5',
+    btnColor: '#586C32',
+    phone: 'Call Kavya',
+  },
 ];
 
-const CATEGORIES = ['All', 'Family', 'Travel', 'Festival', 'Home'];
-
 export default function MemoriesScreen() {
-  const [filter, setFilter] = useState('All');
-  const [selected, setSelected] = useState<MemoryCard | null>(null);
+  const router = useRouter();
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  const filtered = filter === 'All'
-    ? MEMORY_CARDS
-    : MEMORY_CARDS.filter((m) => m.category === filter);
+  const handleCall = (name: string) => {
+    console.log(`Calling ${name}`);
+    audioService.playKey('btn_select');
+  };
+
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const headerTranslateY = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, -50],
+    extrapolate: 'clamp',
+  });
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Memories</Text>
-        <Text style={styles.subtitle}>Your family album · यादें</Text>
-      </View>
-
-      {/* Category filter pills */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
+      <Animated.View 
+        style={[
+          styles.pageHeader, 
+          { backgroundColor: Colors.domainMemories },
+          { 
+            opacity: headerOpacity, 
+            transform: [{ translateY: headerTranslateY }] 
+          }
+        ]}
       >
-        {CATEGORIES.map((cat) => (
-          <TouchableOpacity
-            key={cat}
-            style={[
-              styles.filterPill,
-              filter === cat && styles.filterPillActive,
-            ]}
-            onPress={() => setFilter(cat)}
-          >
-            <Text
-              style={[
-                styles.filterPillText,
-                filter === cat && styles.filterPillTextActive,
-              ]}
-            >
-              {cat}
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.pageTitle}>My Memories</Text>
+            <Text style={styles.pageSubtitle}>
+              Your family and favourite things
             </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      <ScrollView
-        contentContainerStyle={styles.grid}
-        showsVerticalScrollIndicator={false}
-      >
-        {filtered.map((card) => (
-          <TouchableOpacity
-            key={card.id}
-            style={styles.card}
-            onPress={() => setSelected(card)}
-            activeOpacity={0.85}
-          >
-            <View style={[styles.cardImage, { backgroundColor: card.color }]}>
-              <Text style={styles.cardEmoji}>{card.emoji}</Text>
-            </View>
-            <View style={styles.cardBody}>
-              <Text style={styles.cardTitle}>{card.title}</Text>
-              <Text style={styles.cardDesc}>{card.description}</Text>
-              <View style={styles.categoryPill}>
-                <Text style={styles.categoryText}>{card.category}</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
-
-        {/* Add memory card */}
-        <TouchableOpacity style={styles.addCard}>
-          <Text style={styles.addCardEmoji}>+</Text>
-          <Text style={styles.addCardText}>Add a Memory</Text>
-        </TouchableOpacity>
-      </ScrollView>
-
-      {/* Memory detail modal */}
-      <Modal
-        visible={!!selected}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setSelected(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.detailCard}>
-            <View
-              style={[
-                styles.detailImage,
-                { backgroundColor: selected?.color },
-              ]}
-            >
-              <Text style={styles.detailEmoji}>{selected?.emoji}</Text>
-            </View>
-            <Text style={styles.detailTitle}>{selected?.title}</Text>
-            <Text style={styles.detailDesc}>{selected?.description}</Text>
-            <Text style={styles.detailCat}>{selected?.category}</Text>
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => setSelected(null)}
-            >
-              <Text style={styles.closeBtnText}>Close</Text>
-            </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      </Animated.View>
+
+      <Animated.ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      >
+        <Text style={[styles.sectionLabel, { color: '#9A7249' }]}>WHO AM I</Text>
+        
+        {/* Profile Card */}
+        <View style={styles.profileWrapper}>
+          <View style={[styles.cardShadow, { backgroundColor: '#1C1E1B' }]} />
+          <View style={styles.profileCard}>
+            
+            {/* Top Banner (Photo + Info) */}
+            <View style={styles.profileTop}>
+              <Image source={{ uri: 'https://i.pravatar.cc/150?img=68' }} style={styles.profileImage} />
+              <View style={[styles.profileInfo, { backgroundColor: '#2B5336' }]}>
+                <Text style={styles.profileName}>Ramesh Kumar</Text>
+                <Text style={styles.profileSubtitle}>Retired School Teacher</Text>
+                <View style={styles.profileBadge}>
+                  <Text style={styles.profileBadgeText}>78 years old</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Bottom Grid (Details) */}
+            <View style={styles.profileGrid}>
+              <View style={styles.gridRow}>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>BORN</Text>
+                  <Text style={styles.gridValue}>12 March 1947</Text>
+                </View>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>BLOOD GROUP</Text>
+                  <Text style={styles.gridValue}>B+</Text>
+                </View>
+              </View>
+              <View style={styles.gridRow}>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>LIVES AT</Text>
+                  <Text style={styles.gridValue}>14, Jayanagar,{'\n'}Bangalore</Text>
+                </View>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>NATIVE PLACE</Text>
+                  <Text style={styles.gridValue}>Mysuru, Karnataka</Text>
+                </View>
+              </View>
+              <View style={styles.gridRow}>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>LANGUAGES</Text>
+                  <Text style={styles.gridValue}>Kannada, Hindi,{'\n'}English</Text>
+                </View>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>FAVOURITE FOOD</Text>
+                  <Text style={styles.gridValue}>Idli & filter coffee</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <Text style={[styles.sectionLabel, { color: '#9A7249', marginTop: Spacing.xl }]}>YOUR FAMILY</Text>
+
+        <View style={styles.list}>
+          {CONTACTS.map((contact) => (
+            <View key={contact.id} style={styles.cardWrapper}>
+              <View style={[styles.cardShadow, { backgroundColor: '#1C1E1B' }]} />
+              <View style={styles.card}>
+                <View style={styles.cardTop}>
+                  <Image source={{ uri: contact.imageUrl }} style={styles.contactImage} />
+                  <View style={styles.cardInfo}>
+                    <Text style={styles.contactName}>{contact.name}</Text>
+                    <Text style={[styles.contactRelation, { color: contact.btnColor }]}>{contact.relation}</Text>
+                    <Text style={styles.contactDesc}>{contact.description}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={[styles.callBtn, { backgroundColor: contact.btnColor }]}
+                  onPress={() => handleCall(contact.name)}
+                  activeOpacity={0.85}
+                  accessible={true}
+                  accessibilityLabel={`Call ${contact.name}`}
+                >
+                  <FontAwesome5 name="phone-alt" size={16} color="#FFF" style={styles.callIcon} />
+                  <Text style={styles.callBtnText}>{contact.phone}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+
+          {/* Remember This Card */}
+          <View style={styles.cardWrapper}>
+            <View style={[styles.cardShadow, { backgroundColor: '#1C1E1B' }]} />
+            <View style={styles.rememberCard}>
+              <View style={[styles.rememberLeftBar, { backgroundColor: '#586C32' }]} />
+              <View style={styles.rememberContent}>
+                <Text style={styles.rememberTitle}>REMEMBER THIS</Text>
+                <Text style={styles.rememberText}>You live at 14, Jayanagar, Bangalore.</Text>
+                <Text style={styles.rememberContact}>
+                  Priya's phone: <Text style={styles.rememberNumber}>98765-43210</Text>
+                </Text>
+                <Text style={styles.rememberContact}>
+                  Home phone: <Text style={styles.rememberNumber}>080-2234-5678</Text>
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Animated.ScrollView>
 
       <FloatingChatButton />
     </SafeAreaView>
@@ -147,170 +209,229 @@ export default function MemoriesScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.bgCream },
-  header: {
-    backgroundColor: Colors.domainPatterns,
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xl,
+  safe: { 
+    flex: 1, 
+    backgroundColor: Colors.bgCream 
   },
-  title: {
+  pageHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1C1E1B',
+    ...Shadow.card,
+    elevation: 4,
+    zIndex: 10,
+  },
+  pageTitle: {
     fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxxl,
     color: Colors.textOnDark,
   },
-  subtitle: {
+  pageSubtitle: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: Typography.size.sm,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
-  },
-  filterRow: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    gap: Spacing.sm,
-    flexDirection: 'row',
-  },
-  filterPill: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.pill,
-    borderWidth: 1,
-    borderColor: Colors.borderMedium,
-    backgroundColor: Colors.bgCard,
-  },
-  filterPillActive: {
-    backgroundColor: Colors.domainPatterns,
-    borderColor: Colors.domainPatterns,
-  },
-  filterPillText: {
-    fontFamily: Typography.fontFamily.semiBold,
-    fontSize: Typography.size.sm,
-    color: Colors.textSecondary,
-  },
-  filterPillTextActive: { color: Colors.textOnDark },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: 80,
-    gap: Spacing.md,
-  },
-  card: {
-    width: CARD_WIDTH,
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.lg,
-    overflow: 'hidden',
-    ...Shadow.card,
-  },
-  cardImage: {
-    height: CARD_WIDTH * 0.75,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardEmoji: { fontSize: 48 },
-  cardBody: { padding: Spacing.md },
-  cardTitle: {
-    fontFamily: Typography.fontFamily.bold,
     fontSize: Typography.size.md,
-    color: Colors.textPrimary,
-  },
-  cardDesc: {
-    fontFamily: Typography.fontFamily.regular,
-    fontSize: Typography.size.xs,
-    color: Colors.textSecondary,
+    color: '#A6C4AE',
     marginTop: 2,
   },
-  categoryPill: {
-    marginTop: Spacing.sm,
+  headerRow: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center'
+  },
+  scroll: { 
+    paddingHorizontal: Spacing.lg,
+    paddingTop: 160, // extra gap between header and profile
+    paddingBottom: 120, // space for FAB
+  },
+  sectionLabel: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    marginBottom: Spacing.sm,
+    marginLeft: 2,
+  },
+  // Profile Card
+  profileWrapper: {
+    position: 'relative',
+    marginBottom: Spacing.sm,
+  },
+  profileCard: {
+    backgroundColor: Colors.bgCardWarm,
+    borderWidth: 1.5,
+    borderColor: '#1C1E1B',
+  },
+  profileTop: {
+    flexDirection: 'row',
+    borderBottomWidth: 1.5,
+    borderColor: '#1C1E1B',
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRightWidth: 1.5,
+    borderColor: '#1C1E1B',
+  },
+  profileInfo: {
+    flex: 1,
+    padding: Spacing.md,
+    justifyContent: 'center',
+  },
+  profileName: {
+    fontFamily: Typography.fontFamily.display,
+    fontSize: Typography.size.xl,
+    color: '#FFF',
+  },
+  profileSubtitle: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: Typography.size.sm,
+    color: '#A6C4AE',
+    marginTop: 2,
+    marginBottom: Spacing.md,
+  },
+  profileBadge: {
+    backgroundColor: '#C4822A',
     alignSelf: 'flex-start',
-    backgroundColor: Colors.goldLight,
-    borderRadius: Radius.pill,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: '#A67C52',
   },
-  categoryText: {
-    fontFamily: Typography.fontFamily.semiBold,
-    fontSize: 10,
-    color: Colors.gold,
-  },
-  addCard: {
-    width: CARD_WIDTH,
-    height: CARD_WIDTH * 1.3,
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.lg,
-    borderWidth: 1.5,
-    borderColor: Colors.gold,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-  },
-  addCardEmoji: {
-    fontSize: 32,
-    color: Colors.gold,
+  profileBadgeText: {
     fontFamily: Typography.fontFamily.bold,
-  },
-  addCardText: {
-    fontFamily: Typography.fontFamily.semiBold,
     fontSize: Typography.size.sm,
-    color: Colors.gold,
+    color: '#FFF',
   },
-  // Modal
-  modalOverlay: {
+  profileGrid: {
+    padding: Spacing.lg,
+    gap: Spacing.lg,
+  },
+  gridRow: {
+    flexDirection: 'row',
+  },
+  gridCol: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.xl,
+    paddingRight: Spacing.sm,
   },
-  detailCard: {
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.xl,
-    width: '100%',
-    alignItems: 'center',
-    padding: Spacing.xl,
-    ...Shadow.cardStrong,
+  gridLabel: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 10,
+    color: '#896E46',
+    letterSpacing: 1.2,
+    marginBottom: 4,
   },
-  detailImage: {
-    width: 160,
-    height: 160,
-    borderRadius: Radius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.lg,
-  },
-  detailEmoji: { fontSize: 72 },
-  detailTitle: {
-    fontFamily: Typography.fontFamily.display,
-    fontSize: Typography.size.xxl,
+  gridValue: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: Typography.size.md,
     color: Colors.textPrimary,
-    textAlign: 'center',
   },
-  detailDesc: {
+  list: {
+    gap: Spacing.xl,
+  },
+  cardWrapper: {
+    position: 'relative',
+  },
+  cardShadow: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    right: -5,
+    bottom: -5,
+  },
+  card: {
+    backgroundColor: Colors.bgCardWarm,
+    borderWidth: 1.5,
+    borderColor: '#1C1E1B',
+  },
+  cardTop: {
+    flexDirection: 'row',
+  },
+  contactImage: {
+    width: 120,
+    height: 120,
+    borderRightWidth: 1.5,
+    borderColor: '#1C1E1B',
+  },
+  cardInfo: {
+    flex: 1,
+    padding: Spacing.md,
+    justifyContent: 'center',
+  },
+  contactName: {
+    fontFamily: Typography.fontFamily.display,
+    fontSize: Typography.size.xl,
+    color: Colors.textPrimary,
+  },
+  contactRelation: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: Typography.size.sm,
+    marginTop: 2,
+    marginBottom: Spacing.sm,
+  },
+  contactDesc: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 15,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  callBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+    borderTopWidth: 1.5,
+    borderColor: '#1C1E1B',
+  },
+  callIcon: {
+    marginRight: Spacing.sm,
+  },
+  callBtnText: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: Typography.size.lg,
+    color: '#FFF',
+  },
+  // Remember This Card
+  rememberCard: {
+    backgroundColor: Colors.bgCardWarm,
+    borderWidth: 1.5,
+    borderColor: '#1C1E1B',
+    flexDirection: 'row',
+  },
+  rememberLeftBar: {
+    width: 8,
+    borderRightWidth: 1.5,
+    borderColor: '#1C1E1B',
+  },
+  rememberContent: {
+    flex: 1,
+    padding: Spacing.lg,
+  },
+  rememberTitle: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 12,
+    color: '#896E46',
+    letterSpacing: 1.5,
+    marginBottom: Spacing.sm,
+  },
+  rememberText: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: Typography.size.md,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.md,
+  },
+  rememberContact: {
     fontFamily: Typography.fontFamily.regular,
     fontSize: Typography.size.md,
     color: Colors.textSecondary,
-    marginTop: Spacing.sm,
-    textAlign: 'center',
+    marginBottom: 4,
   },
-  detailCat: {
-    fontFamily: Typography.fontFamily.semiBold,
-    fontSize: Typography.size.sm,
-    color: Colors.gold,
-    marginTop: Spacing.sm,
-  },
-  closeBtn: {
-    marginTop: Spacing.xl,
-    backgroundColor: Colors.domainPatterns,
-    borderRadius: Radius.md,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xxl,
-  },
-  closeBtnText: {
+  rememberNumber: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.md,
-    color: Colors.textOnDark,
+    color: '#2B5336', // Dark green phone numbers
   },
 });
 

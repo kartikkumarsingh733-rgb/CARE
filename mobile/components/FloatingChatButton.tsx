@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Colors, Shadow, Typography } from '../constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Colors, Shadow, Typography, Spacing } from '../constants/theme';
 import { voiceCommandService } from '../services/VoiceCommandService';
 import { audioService } from '../services/AudioService';
 
-export default function FloatingChatButton() {
+export default function FloatingChatButton({ bottomOffset = 24 }: { bottomOffset?: number }) {
   const router = useRouter();
   const [isRecording, setIsRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -24,7 +25,6 @@ export default function FloatingChatButton() {
       console.log('Voice transcript:', transcript);
       const handled = voiceCommandService.handleNavigationCommand(transcript, router);
       if (!handled) {
-        // Fallback to chat screen if it wasn't a navigation command
         router.push('/chat');
       }
     } else {
@@ -34,49 +34,68 @@ export default function FloatingChatButton() {
   };
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.fab,
-        isRecording && styles.fabRecording
-      ]}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      activeOpacity={0.85}
-      accessible={true}
-      accessibilityRole="button"
-      accessibilityLabel={isRecording ? "Listening to your voice command" : "Hold to speak a voice command"}
-    >
-      {processing ? (
-        <ActivityIndicator color={Colors.chatGreen} />
-      ) : (
-        <Text style={styles.fabEmoji} importantForAccessibility="no">{isRecording ? '🎙️' : '🤗'}</Text>
-      )}
-      {isRecording && <Text style={styles.listenText} importantForAccessibility="no">Speak now...</Text>}
-    </TouchableOpacity>
+    <View style={[styles.fabWrapper, { bottom: bottomOffset }]}>
+      <TouchableOpacity
+        style={[
+          styles.fab,
+          { backgroundColor: '#2B5336' },
+          isRecording && styles.fabRecording
+        ]}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.85}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel={isRecording ? "Listening to your voice command" : "Hold to speak a voice command"}
+      >
+        {processing ? (
+          <ActivityIndicator color="#FFF" />
+        ) : (
+          isRecording ? (
+             <MaterialIcons name="mic" size={28} color="#FFF" />
+          ) : (
+             <MaterialIcons name="chat" size={28} color="#FFF" />
+          )
+        )}
+        {isRecording && <Text style={styles.listenText} importantForAccessibility="no">Speak now...</Text>}
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
+  fabWrapper: {
     position: 'absolute',
-    bottom: 80,  // above tab bar
-    right: 16,
-    width: 56,
-    height: 56,
-    backgroundColor: Colors.chatGreen,
+    right: Spacing.xl,
+    width: 64,
+    height: 64,
+    zIndex: 100,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  fab: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: Colors.borderLight,
-    ...Shadow.cardStrong,
   },
   fabRecording: {
     width: 150,
+    borderRadius: 32,
     backgroundColor: Colors.alertRed,
     flexDirection: 'row',
     gap: 8,
   },
-  fabEmoji: { fontSize: 26 },
   listenText: {
     fontFamily: Typography.fontFamily.semiBold,
     color: '#FFF',

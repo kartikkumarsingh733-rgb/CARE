@@ -1,28 +1,8 @@
 // Caregiver Mode tab navigator — Material Design Redesign
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { Colors, Typography } from '@/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
-
-function TabIcon({
-  iconName,
-  label,
-  focused,
-}: {
-  iconName: keyof typeof MaterialIcons.glyphMap;
-  label: string;
-  focused: boolean;
-}) {
-  const color = focused ? Colors.caregiverPrimary : Colors.caregiverTextMuted;
-  return (
-    <View style={styles.tabItem}>
-      <MaterialIcons name={iconName} size={24} color={color} />
-      <Text style={[styles.tabLabel, { color }]}>
-        {label}
-      </Text>
-    </View>
-  );
-}
 
 export default function CaregiverTabLayout() {
   return (
@@ -30,46 +10,53 @@ export default function CaregiverTabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarShowLabel: false,
+        tabBarActiveTintColor: Colors.caregiverPrimary,
+        tabBarInactiveTintColor: Colors.caregiverTextMuted,
+        tabBarLabelStyle: styles.tabLabel,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="dashboard" label="Home" focused={focused} />
+          tabBarLabel: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="dashboard" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="patients"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="people" label="Patients" focused={focused} />
+          tabBarLabel: "Patients",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="people" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="alerts"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="notifications" label="Alerts" focused={focused} />
+          tabBarLabel: "Alerts",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="notifications" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="trends"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="trending-up" label="Trends" focused={focused} />
+          tabBarLabel: "Trends",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="trending-up" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="access"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="settings" label="Settings" focused={focused} />
+          tabBarLabel: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="settings" size={size} color={color} />
           ),
         }}
       />
@@ -82,13 +69,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.caregiverBg,
     borderTopWidth: 1,
     borderTopColor: Colors.caregiverBorder,
-    height: 64,
-    paddingBottom: 8,
+    height: Platform.OS === 'ios' ? 88 : 68,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 8,
     paddingTop: 8,
-  },
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   tabLabel: {
     fontFamily: Typography.fontFamily.regular,

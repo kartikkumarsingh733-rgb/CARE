@@ -1,5 +1,3 @@
-// My Day Tab — daily schedule / reminders timeline (PRD §5e)
-// Shows time-ordered items, highlights "next", completed with strikethrough
 import {
   View,
   Text,
@@ -14,16 +12,17 @@ import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import FloatingChatButton from '@/components/FloatingChatButton';
 import { useAppStore, Reminder } from '@/store/appStore';
 import { NotificationService } from '@/services/NotificationService';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const TASK_CATEGORIES = [
-  { label: 'Medicine',       emoji: '💊', color: '#1B263B' },
-  { label: 'Meal',           emoji: '🍽️', color: '#E07A5F' },
-  { label: 'Drink Water',    emoji: '💧', color: '#005F73' },
-  { label: 'Walk',           emoji: '🚶', color: Colors.successTeal },
-  { label: 'Doctor Visit',   emoji: '⭐', color: Colors.domainAttention },
-  { label: 'Temple / Prayer', emoji: '🛕', color: Colors.domainPatterns },
-  { label: 'Call Family',    emoji: '📞', color: Colors.domainMemory },
-  { label: 'Rest / Nap',     emoji: '🛌', color: Colors.textMuted },
+  { label: 'Medicine',       icon: 'medication', color: '#C4822A' },
+  { label: 'Meal',           icon: 'restaurant', color: '#366184' },
+  { label: 'Drink Water',    icon: 'local-drink', color: '#366184' },
+  { label: 'Walk',           icon: 'directions-walk', color: '#366184' },
+  { label: 'Doctor Visit',   icon: 'local-hospital', color: '#C4822A' },
+  { label: 'Temple / Prayer', icon: 'temple-hindu', color: '#C4822A' },
+  { label: 'Call Family',    icon: 'phone', color: '#586C32' },
+  { label: 'Rest / Nap',     icon: 'bed', color: '#586C32' },
 ];
 
 const TIME_SLOTS = [
@@ -42,7 +41,6 @@ export default function MyDayScreen() {
   const [selectedTime, setSelectedTime] = useState<typeof TIME_SLOTS[0] | null>(null);
 
   useEffect(() => {
-    // Request permissions when the screen loads
     NotificationService.requestPermissionsAsync();
   }, []);
 
@@ -51,29 +49,31 @@ export default function MyDayScreen() {
 
     let notificationId: string | undefined;
 
-    if (selectedTime.label === 'Test Now') {
-      notificationId = await NotificationService.scheduleReminderInSeconds(
-        selectedCategory.label,
-        'Time to do your task!',
-        10,
-        { category: selectedCategory.label }
-      );
-    } else {
-      // In a real app, parse `selectedTime.time` to the actual Date object
-      // For now, we'll schedule it for 2 minutes from now as a demo if not 'Test Now'
-      notificationId = await NotificationService.scheduleReminderInSeconds(
-        selectedCategory.label,
-        'Time for your scheduled task!',
-        120, // 2 mins
-        { category: selectedCategory.label }
-      );
+    try {
+      if (selectedTime.label === 'Test Now') {
+        notificationId = await NotificationService.scheduleReminderInSeconds(
+          selectedCategory.label,
+          'Time to do your task!',
+          10,
+          { category: selectedCategory.label }
+        );
+      } else {
+        notificationId = await NotificationService.scheduleReminderInSeconds(
+          selectedCategory.label,
+          'Time for your scheduled task!',
+          120, // 2 mins
+          { category: selectedCategory.label }
+        );
+      }
+    } catch (e) {
+      console.warn("Notifications may not work in Expo Go, adding task anyway");
     }
 
     addReminder({
       title: selectedCategory.label,
       subtitle: `Scheduled for ${selectedTime.label}`,
       time: selectedTime.time,
-      emoji: selectedCategory.emoji,
+      icon: selectedCategory.icon,
       color: selectedCategory.color,
       notificationId,
     });
@@ -83,19 +83,23 @@ export default function MyDayScreen() {
     setSelectedTime(null);
   };
 
-  const today = new Date().toLocaleDateString('en-IN', {
+  const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
 
+  const nextTaskIndex = reminders.findIndex(r => !r.done);
+
   return (
-    <SafeAreaView style={styles.safe}>
-      {/* Header */}
+    <View style={styles.container}>
+      {/* Header outside SafeArea to reach top, or wrapped in SafeArea with bg color */}
       <View style={styles.header}>
-        <Text style={styles.title}>My Day</Text>
-        <Text style={styles.date}>{today}</Text>
+        <SafeAreaView edges={['top']}>
+          <Text style={styles.title}>My Day</Text>
+          <Text style={styles.date}>{today}</Text>
+        </SafeAreaView>
       </View>
 
       <ScrollView
@@ -104,56 +108,72 @@ export default function MyDayScreen() {
       >
         <Text style={styles.sectionLabel}>TODAY'S SCHEDULE</Text>
 
-        {reminders.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            onPress={() => toggleReminderDone(item.id)}
-            activeOpacity={0.8}
-            style={[
-              styles.scheduleRow,
-              item.isNext && styles.scheduleRowNext,
-            ]}
-          >
-            <Text style={styles.timeText}>{item.time}</Text>
-            <View
+        {reminders.map((item, index) => {
+          const isNext = index === nextTaskIndex;
+          
+          return (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => toggleReminderDone(item.id)}
+              activeOpacity={0.8}
               style={[
-                styles.iconSquare,
-                { backgroundColor: item.done ? '#DDD' : item.color },
+                styles.scheduleRow,
+                isNext && styles.scheduleRowNext,
+                item.done && styles.scheduleRowDone,
               ]}
             >
-              {item.done ? (
-                <Text style={styles.checkmark}>✓</Text>
-              ) : (
-                <Text style={styles.rowEmoji}>{item.emoji}</Text>
-              )}
-            </View>
-            <View style={styles.rowInfo}>
-              <Text
+              {/* Left Accent Line */}
+              <View style={[
+                styles.accentLine, 
+                { backgroundColor: item.color },
+                item.done && { opacity: 0.3 }
+              ]} />
+              
+              <Text style={[styles.timeText, item.done && { opacity: 0.5 }]}>{item.time}</Text>
+              
+              <View
                 style={[
-                  styles.rowTitle,
-                  item.done && styles.strikethrough,
+                  styles.iconSquare,
+                  { backgroundColor: item.color },
+                  item.done && { backgroundColor: '#C8C1B5', opacity: 0.8 } // Faded gray for done items
                 ]}
               >
-                {item.title}
-              </Text>
-              <Text
-                style={[
-                  styles.rowSubtitle,
-                  item.done && styles.strikethrough,
-                ]}
-              >
-                {item.subtitle}
-              </Text>
-            </View>
-            {item.isNext && !item.done && (
-              <View style={styles.nextBadge}>
-                <Text style={styles.nextBadgeText}>NEXT</Text>
+                <MaterialIcons 
+                  name={item.done ? "check" : (item.icon as any)} 
+                  size={32} 
+                  color="#FFFFFF" 
+                />
               </View>
-            )}
-          </TouchableOpacity>
-        ))}
+              
+              <View style={styles.rowInfo}>
+                <Text
+                  style={[
+                    styles.rowTitle,
+                    item.done && styles.strikethroughTitle,
+                  ]}
+                >
+                  {item.title}
+                </Text>
+                <Text
+                  style={[
+                    styles.rowSubtitle,
+                    item.done && styles.strikethroughSubtitle,
+                  ]}
+                >
+                  {item.subtitle}
+                </Text>
+              </View>
+              
+              {isNext && (
+                <View style={styles.nextBadge}>
+                  <Text style={styles.nextBadgeText}>NEXT</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
 
-        {/* Add Task */}
+        {/* Add Task UI, retained but re-styled */}
         <TouchableOpacity
           style={styles.addTaskBtn}
           onPress={() => setShowAddTask(true)}
@@ -184,8 +204,8 @@ export default function MyDayScreen() {
                   ]}
                   onPress={() => setSelectedCategory(cat)}
                 >
-                  <Text style={styles.catEmoji}>{cat.emoji}</Text>
-                  <Text style={styles.catLabel}>{cat.label}</Text>
+                  <MaterialIcons name={cat.icon as any} size={24} color={selectedCategory?.label === cat.label ? '#FFF' : cat.color} />
+                  <Text style={[styles.catLabel, selectedCategory?.label === cat.label && {color: '#FFF'}]}>{cat.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -200,8 +220,8 @@ export default function MyDayScreen() {
                 ]}
                 onPress={() => setSelectedTime(slot)}
               >
-                <Text style={styles.timeSlotLabel}>{slot.label}</Text>
-                <Text style={styles.timeSlotTime}>{slot.time}</Text>
+                <Text style={[styles.timeSlotLabel, selectedTime?.label === slot.label && {color: '#FFF'}]}>{slot.label}</Text>
+                <Text style={[styles.timeSlotTime, selectedTime?.label === slot.label && {color: 'rgba(255,255,255,0.8)'}]}>{slot.time}</Text>
               </TouchableOpacity>
             ))}
 
@@ -224,106 +244,124 @@ export default function MyDayScreen() {
       </Modal>
 
       <FloatingChatButton />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.bgCream },
+  container: { flex: 1, backgroundColor: Colors.bgCream },
   header: {
-    backgroundColor: Colors.domainAttention,
+    backgroundColor: Colors.domainRecall, // #8C4031 brown
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
+    paddingTop: Spacing.lg,
     paddingBottom: Spacing.xl,
-    borderBottomWidth: 2,
-    borderBottomColor: Colors.borderLight,
   },
   title: {
     fontFamily: Typography.fontFamily.display,
-    fontSize: Typography.size.xxxl,
-    color: Colors.textOnDark,
+    fontSize: 40,
+    color: '#FFFFFF',
+    marginTop: Spacing.xl,
   },
   date: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: Typography.size.sm,
-    color: 'rgba(255,255,255,0.9)',
-    marginTop: 4,
+    fontSize: 18,
+    color: '#F0D6C1', // Light beige text matching design
+    marginTop: 8,
   },
-  scroll: { paddingHorizontal: Spacing.lg, paddingBottom: 80 },
+  scroll: { paddingHorizontal: Spacing.lg, paddingBottom: 120 },
   sectionLabel: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: Typography.size.xs,
-    color: Colors.textSecondary,
-    letterSpacing: 1.2,
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.sm,
+    fontSize: 14,
+    color: '#7C6746', // Brownish
+    letterSpacing: 1.5,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   scheduleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.bgCardWarm,
-    borderWidth: 2,
-    borderColor: Colors.borderLight,
-    padding: Spacing.md,
+    backgroundColor: '#FDFCF7', // Off-white
+    borderWidth: 1,
+    borderColor: '#E8DFCC',
+    paddingVertical: 18,
+    paddingHorizontal: 12,
     marginBottom: Spacing.md,
-    gap: Spacing.md,
-    ...Shadow.card,
-    shadowOffset: { width: 3, height: 3 },
+    gap: 12,
   },
   scheduleRowNext: {
-    borderColor: Colors.domainPatterns,
-    borderWidth: 2,
-    backgroundColor: Colors.domainPatternsShadow,
+    backgroundColor: '#FFF9ED', // Golden tint for NEXT
+    borderColor: '#602A1A',
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+    shadowColor: '#4A2A1A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  scheduleRowDone: {
+    backgroundColor: '#FDFBF5',
+    opacity: 0.8,
+  },
+  accentLine: {
+    position: 'absolute',
+    left: -1,
+    top: 8,
+    bottom: 8,
+    width: 6,
+    borderRadius: 3,
   },
   timeText: {
-    fontFamily: Typography.fontFamily.semiBold,
-    fontSize: Typography.size.sm,
-    color: Colors.textSecondary,
-    width: 65,
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 14,
+    color: '#6A5638',
+    width: 70,
+    textAlign: 'center',
   },
   iconSquare: {
-    width: 44,
-    height: 44,
-    borderWidth: 2,
-    borderColor: Colors.borderLight,
+    width: 52,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 4,
   },
-  checkmark: { fontSize: 20, color: Colors.textOnDark },
-  rowEmoji: { fontSize: 24 },
-  rowInfo: { flex: 1 },
+  rowInfo: { flex: 1, marginLeft: 4 },
   rowTitle: {
     fontFamily: Typography.fontFamily.display,
-    fontSize: Typography.size.lg,
-    color: Colors.textPrimary,
+    fontSize: 22,
+    color: '#000000',
+    marginBottom: 4,
   },
   rowSubtitle: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: Typography.size.sm,
-    color: Colors.textSecondary,
-    marginTop: 2,
+    fontSize: 16,
+    color: '#6A5638',
   },
-  strikethrough: {
+  strikethroughTitle: {
     textDecorationLine: 'line-through',
-    color: Colors.textMuted,
+    color: '#B8A692',
+  },
+  strikethroughSubtitle: {
+    color: '#B8A692',
   },
   nextBadge: {
-    backgroundColor: Colors.domainPatterns,
-    borderWidth: 2,
-    borderColor: Colors.borderLight,
-    paddingHorizontal: Spacing.sm,
+    backgroundColor: '#B57C2A', // Golden
+    paddingHorizontal: 8,
     paddingVertical: 4,
+    borderRadius: 4,
+    marginRight: 4,
   },
   nextBadgeText: {
     fontFamily: Typography.fontFamily.bold,
     fontSize: 12,
-    color: Colors.textOnDark,
+    color: '#FFFFFF',
+    letterSpacing: 1,
   },
   addTaskBtn: {
     marginTop: Spacing.lg,
     borderWidth: 2,
     borderColor: Colors.borderLight,
-    backgroundColor: Colors.domainPatterns,
+    backgroundColor: '#FFFFFF',
     paddingVertical: Spacing.lg,
     alignItems: 'center',
     ...Shadow.card,
@@ -332,9 +370,9 @@ const styles = StyleSheet.create({
   addTaskText: {
     fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.md,
-    color: Colors.textOnDark,
+    color: Colors.textPrimary,
   },
-  // Modal (Neubrutalism styled)
+  // Modal (Retained similar styling)
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
@@ -375,10 +413,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 2, height: 2 },
   },
   catTileSelected: {
-    backgroundColor: Colors.domainPatterns,
+    backgroundColor: Colors.domainRecall, // #8C4031
     shadowOffset: { width: 0, height: 0 },
   },
-  catEmoji: { fontSize: 24 },
   catLabel: {
     fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.sm,
@@ -404,7 +441,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 2, height: 2 },
   },
   timeSlotSelected: {
-    backgroundColor: Colors.domainAttention,
+    backgroundColor: Colors.domainRecall, // #8C4031
     shadowOffset: { width: 0, height: 0 },
   },
   timeSlotLabel: {

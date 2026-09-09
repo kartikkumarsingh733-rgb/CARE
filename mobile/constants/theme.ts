@@ -8,16 +8,19 @@ export const Colors = {
   bgCardWarm: '#F3E8D5',
 
   // ─── Domain Colors (each game domain has its own identity color) ──────────
-  domainMemory: '#366184',      // Blue
+  domainMemory: '#3B627A',      // Blue
   domainMemoryShadow: '#1C1E1B',
   
-  domainAttention: '#366184',
+  domainAttention: '#586C32',   // Olive Green
   domainAttentionShadow: '#1C1E1B',
   
-  domainLanguage: '#366184',
+  domainPatterns: '#893528',    // Rust Brown/Red
+  domainPatternsShadow: '#1C1E1B',
+  
+  domainLanguage: '#B02A24',    // Crimson Red
   domainLanguageShadow: '#1C1E1B',
 
-  domainComputation: '#366184',
+  domainComputation: '#C4822A', // Gold
   domainComputationShadow: '#1C1E1B',
   
   domainRecall: '#8C4031',      // Rust Red

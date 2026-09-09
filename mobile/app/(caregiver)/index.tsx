@@ -5,28 +5,70 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import { useAppStore } from '@/store/appStore';
 import { getRecentSessionsForDomain } from '@/engine/database';
 import { MaterialIcons } from '@expo/vector-icons';
 
-// Reusable Caregiver Button Component
-const Button = ({ title, onPress, icon }: { title: string; onPress: () => void; icon?: keyof typeof MaterialIcons.glyphMap }) => (
-  <TouchableOpacity style={styles.button} onPress={onPress}>
-    {icon && <MaterialIcons name={icon} size={20} color="#FFFFFF" style={{ marginRight: 8 }} />}
-    <Text style={styles.buttonText}>{title}</Text>
+// Caregiver Color Palette (Strictly from user request)
+const C_COLORS = {
+  primary: '#1E88E5', // Blue
+  secondary: '#F5F5F5', // Light Gray background
+  accent: '#FF5252', // Red
+  textDark: '#212121', // High contrast text
+  textMuted: '#616161',
+  white: '#FFFFFF',
+  border: '#E0E0E0',
+};
+
+// 8px/4px scale
+const SPACE = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+};
+
+// Reusable Components matching Material Design principles
+const Button = ({ title, onPress, icon, type = 'primary' }: { title: string; onPress: () => void; icon?: keyof typeof MaterialIcons.glyphMap, type?: 'primary' | 'outline' }) => (
+  <TouchableOpacity 
+    style={[
+      styles.btn, 
+      type === 'primary' ? styles.btnPrimary : styles.btnOutline
+    ]} 
+    onPress={onPress}
+    accessible={true}
+    accessibilityRole="button"
+    accessibilityLabel={title}
+  >
+    {icon && (
+      <MaterialIcons 
+        name={icon} 
+        size={20} 
+        color={type === 'primary' ? C_COLORS.white : C_COLORS.primary} 
+        style={{ marginRight: SPACE.sm }} 
+      />
+    )}
+    <Text style={[styles.btnText, type === 'primary' ? styles.btnTextPrimary : styles.btnTextOutline]}>{title}</Text>
   </TouchableOpacity>
 );
 
+const Card = ({ children, style }: { children: React.ReactNode; style?: any }) => (
+  <View style={[styles.card, style]}>
+    {children}
+  </View>
+);
+
 const RECENT_ALERTS = [
-  { icon: 'emergency', text: 'Ramesh tapped the SOS button at 3:42 PM', time: '3:42 PM', color: Colors.caregiverAccent },
-  { icon: 'medication', text: 'Evening medicine not marked as taken yet', time: '8:00 PM', color: Colors.alertYellow },
+  { id: '1', icon: 'emergency', text: 'Ramesh tapped the SOS button at 3:42 PM', time: '3:42 PM', critical: true },
+  { id: '2', icon: 'medication', text: 'Evening medicine not marked as taken yet', time: '8:00 PM', critical: false },
 ];
 
-export default function CaregiverHome() {
+export default function CaregiverDashboard() {
   const router = useRouter();
   const patient = useAppStore((state) => state.patient);
   const [gamesPlayedToday, setGamesPlayedToday] = useState(0);
@@ -46,216 +88,230 @@ export default function CaregiverHome() {
   );
 
   const SUMMARY_CARDS = [
-    { label: 'Played Today', value: gamesPlayedToday.toString(), sub: 'games', color: Colors.caregiverPrimary, icon: 'sports-esports' },
-    { label: 'Schedule Done', value: '3/8', sub: 'tasks', color: Colors.successTeal, icon: 'check-circle' },
-    { label: 'Active Alerts', value: '1', sub: 'critical', color: Colors.caregiverAccent, icon: 'warning' },
-    { label: 'Last Seen', value: '2h ago', sub: 'online', color: Colors.gold, icon: 'schedule' },
+    { label: 'Played Today', value: gamesPlayedToday.toString(), sub: 'games', icon: 'sports-esports', color: C_COLORS.primary },
+    { label: 'Schedule Done', value: '3/8', sub: 'tasks', icon: 'check-circle', color: '#4CAF50' },
+    { label: 'Active Alerts', value: '1', sub: 'critical', icon: 'warning', color: C_COLORS.accent },
+    { label: 'Last Seen', value: '2h ago', sub: 'online', icon: 'schedule', color: C_COLORS.textMuted },
   ];
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         
-        {/* Header */}
+        {/* Header - H1 32px Bold */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>Caregiver Dashboard</Text>
+            <Text style={styles.h1}>Dashboard</Text>
             <Text style={styles.subtitle}>{patient.name} · {patient.age} yrs</Text>
           </View>
-          <TouchableOpacity
-            style={styles.elderBtn}
-            onPress={() => router.push('/(elder)' as any)}
-          >
-            <MaterialIcons name="exit-to-app" size={20} color={Colors.caregiverPrimary} />
-            <Text style={styles.elderBtnText}>Elder View</Text>
-          </TouchableOpacity>
+          <Button title="Elder View" icon="exit-to-app" type="outline" onPress={() => router.push('/(elder)' as any)} />
         </View>
 
-        {/* Summary grid (12 column layout equivalent) */}
-        <View style={styles.summaryGrid}>
+        {/* 12-Column Grid Simulation (Using flex with precise gaps) */}
+        <View style={styles.gridContainer}>
           {SUMMARY_CARDS.map((c) => (
-            <View key={c.label} style={styles.summaryCard}>
-              <View style={styles.cardHeader}>
-                <MaterialIcons name={c.icon as any} size={24} color={c.color} />
-                <Text style={styles.summaryLabel}>{c.label}</Text>
-              </View>
-              <Text style={[styles.summaryValue, { color: c.color }]}>{c.value}</Text>
-              <Text style={styles.summarySub}>{c.sub}</Text>
+            <View key={c.label} style={styles.gridItem6}>
+              <Card style={styles.statCard}>
+                <View style={styles.statHeader}>
+                  <MaterialIcons name={c.icon as any} size={24} color={c.color} />
+                  <Text style={styles.statLabel}>{c.label}</Text>
+                </View>
+                <Text style={styles.statValue}>{c.value}</Text>
+                <Text style={styles.statSub}>{c.sub}</Text>
+              </Card>
             </View>
           ))}
         </View>
 
-        {/* Recent alerts */}
-        <Text style={styles.sectionLabel}>RECENT ALERTS</Text>
-        <View style={styles.alertsCard}>
+        {/* Alerts Section */}
+        <Text style={styles.sectionTitle}>RECENT ALERTS</Text>
+        <Card style={styles.alertsContainer}>
           {RECENT_ALERTS.map((a, i) => (
-            <View key={i} style={[styles.alertRow, i === RECENT_ALERTS.length - 1 && { borderBottomWidth: 0 }]}>
-              <View style={[styles.alertIconBg, { backgroundColor: a.color + '20' }]}>
-                <MaterialIcons name={a.icon as any} size={24} color={a.color} />
+            <View key={a.id} style={[styles.alertRow, i === RECENT_ALERTS.length - 1 && styles.noBorder]}>
+              <View style={[styles.alertIconBg, a.critical && styles.alertIconBgCritical]}>
+                <MaterialIcons name={a.icon as any} size={24} color={a.critical ? C_COLORS.accent : C_COLORS.textDark} />
               </View>
               <View style={styles.alertInfo}>
-                <Text style={styles.alertText}>{a.text}</Text>
-                <Text style={styles.alertTime}>{a.time}</Text>
+                <Text style={styles.bodyText}>{a.text}</Text>
+                <Text style={styles.captionText}>{a.time}</Text>
               </View>
             </View>
           ))}
+        </Card>
+
+        {/* Quick Actions Section */}
+        <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
+        <View style={styles.gridContainer}>
+          <View style={styles.gridItem12}>
+            <Button title="Add Reminder" icon="alarm-add" onPress={() => {}} />
+          </View>
+          <View style={styles.gridItem12}>
+            <Button title="View Trends" icon="trending-up" onPress={() => router.push('/(caregiver)/trends' as any)} />
+          </View>
         </View>
 
-        {/* Quick actions */}
-        <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
-        <View style={styles.actionsRow}>
-          <Button title="Add Reminder" icon="alarm-add" onPress={() => {}} />
-          <Button title="View Trends" icon="trending-up" onPress={() => router.push('/(caregiver)/trends' as any)} />
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.caregiverSecondary },
-  scroll: { paddingBottom: Spacing.xxxl },
+  safe: { flex: 1, backgroundColor: C_COLORS.secondary },
+  scroll: { paddingBottom: SPACE.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 32,
-    paddingBottom: 24,
-    backgroundColor: Colors.caregiverBg,
-    ...Shadow.caregiverCard,
-    marginBottom: 16,
+    padding: SPACE.md,
+    backgroundColor: C_COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: C_COLORS.border,
+    marginBottom: SPACE.md,
   },
-  title: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: 24, // Modified from 32px to fit mobile screen nicely while keeping hierarchy
-    color: Colors.caregiverText,
+  h1: {
+    fontFamily: Platform.OS === 'android' ? 'sans-serif-medium' : 'System',
+    fontWeight: 'bold',
+    fontSize: 32, // Explicitly requested H1 32px bold
+    color: C_COLORS.textDark,
   },
   subtitle: {
-    fontFamily: Typography.fontFamily.regular,
+    fontFamily: Platform.OS === 'android' ? 'sans-serif' : 'System',
     fontSize: 16,
-    color: Colors.caregiverTextMuted,
-    marginTop: 4,
+    color: C_COLORS.textMuted,
+    marginTop: SPACE.xs,
   },
-  elderBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.caregiverSecondary,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: Colors.caregiverBorder,
-  },
-  elderBtnText: {
-    fontFamily: Typography.fontFamily.semiBold,
+  sectionTitle: {
+    fontFamily: Platform.OS === 'android' ? 'sans-serif-medium' : 'System',
+    fontWeight: 'bold',
     fontSize: 14,
-    color: Colors.caregiverPrimary,
-    marginLeft: 4,
+    color: C_COLORS.textMuted,
+    letterSpacing: 0.5,
+    marginHorizontal: SPACE.md,
+    marginTop: SPACE.lg,
+    marginBottom: SPACE.sm,
   },
-  summaryGrid: {
+  // 12-Column Grid Simulation
+  gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 12, // 16px - 4px gap compensation
+    paddingHorizontal: SPACE.sm, // Outer padding (half of gap)
   },
-  summaryCard: {
-    width: '46%', // Emulate 6-column grid with gap
-    backgroundColor: Colors.caregiverCardBg,
+  gridItem6: {
+    width: '50%',
+    padding: SPACE.sm, // Inner padding to create 16px gap
+  },
+  gridItem12: {
+    width: '100%',
+    padding: SPACE.sm,
+  },
+  card: {
+    backgroundColor: C_COLORS.white,
     borderRadius: 8,
-    padding: 16,
-    marginHorizontal: '2%',
-    marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.caregiverBorder,
-    ...Shadow.caregiverCard,
+    borderColor: C_COLORS.border,
+    elevation: 2, // Material shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-  cardHeader: {
+  statCard: {
+    padding: SPACE.md,
+  },
+  statHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: SPACE.sm,
   },
-  summaryLabel: {
-    fontFamily: Typography.fontFamily.regular,
+  statLabel: {
+    fontFamily: Platform.OS === 'android' ? 'sans-serif' : 'System',
     fontSize: 14,
-    color: Colors.caregiverTextMuted,
-    marginLeft: 8,
+    color: C_COLORS.textMuted,
+    marginLeft: SPACE.sm,
   },
-  summaryValue: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: 28,
+  statValue: {
+    fontFamily: Platform.OS === 'android' ? 'sans-serif-medium' : 'System',
+    fontWeight: 'bold',
+    fontSize: 24,
+    color: C_COLORS.textDark,
   },
-  summarySub: {
-    fontFamily: Typography.fontFamily.regular,
+  statSub: {
+    fontFamily: Platform.OS === 'android' ? 'sans-serif' : 'System',
     fontSize: 12,
-    color: Colors.caregiverTextMuted,
-    marginTop: 4,
+    color: C_COLORS.textMuted,
+    marginTop: SPACE.xs,
   },
-  sectionLabel: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: 14,
-    color: Colors.caregiverTextMuted,
-    letterSpacing: 1,
-    marginTop: 16,
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-  alertsCard: {
-    marginHorizontal: 16,
-    backgroundColor: Colors.caregiverCardBg,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: Colors.caregiverBorder,
-    ...Shadow.caregiverCard,
+  alertsContainer: {
+    marginHorizontal: SPACE.md,
   },
   alertRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
+    alignItems: 'flex-start',
+    padding: SPACE.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.caregiverBorder,
+    borderBottomColor: C_COLORS.border,
+  },
+  noBorder: {
+    borderBottomWidth: 0,
   },
   alertIconBg: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: C_COLORS.secondary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  alertIconBgCritical: {
+    backgroundColor: '#FFEBEE', // Very light red
   },
   alertInfo: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: SPACE.md,
   },
-  alertText: {
-    fontFamily: Typography.fontFamily.regular,
-    fontSize: 16,
-    color: Colors.caregiverText,
-    lineHeight: 22,
+  bodyText: {
+    fontFamily: Platform.OS === 'android' ? 'sans-serif' : 'System',
+    fontSize: 16, // Body 16px regular
+    color: C_COLORS.textDark,
+    lineHeight: 24,
   },
-  alertTime: {
-    fontFamily: Typography.fontFamily.regular,
+  captionText: {
+    fontFamily: Platform.OS === 'android' ? 'sans-serif' : 'System',
     fontSize: 12,
-    color: Colors.caregiverTextMuted,
-    marginTop: 4,
+    color: C_COLORS.textMuted,
+    marginTop: SPACE.xs,
   },
-  actionsRow: {
-    flexDirection: 'column',
-    gap: 16,
-    paddingHorizontal: 16,
-    marginBottom: 32,
-  },
-  button: {
+  btn: {
     flexDirection: 'row',
-    backgroundColor: Colors.caregiverPrimary,
-    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    ...Shadow.caregiverCard,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: SPACE.md,
   },
-  buttonText: {
-    fontFamily: Typography.fontFamily.semiBold,
+  btnPrimary: {
+    backgroundColor: C_COLORS.primary,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  btnOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: C_COLORS.primary,
+  },
+  btnText: {
+    fontFamily: Platform.OS === 'android' ? 'sans-serif-medium' : 'System',
+    fontWeight: 'bold',
     fontSize: 16,
-    color: '#FFFFFF',
+  },
+  btnTextPrimary: {
+    color: C_COLORS.white,
+  },
+  btnTextOutline: {
+    color: C_COLORS.primary,
   },
 });
 

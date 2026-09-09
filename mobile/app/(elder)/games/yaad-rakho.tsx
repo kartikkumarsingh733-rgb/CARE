@@ -39,7 +39,13 @@ export default function YaadRakhoGame() {
   const patientId = useAppStore(state => state.patient.id);
   const diffParams = getDifficultyForDomain(currentTier);
 
-  const { studyItems, recallQuestions } = generateMemoryRound(diffParams.itemCount <= 4 ? 3 : 4);
+  const [gameContent, setGameContent] = useState(() => 
+    generateMemoryRound(
+      diffParams.itemCount <= 4 ? 3 : 4,
+      Math.min(diffParams.itemCount, 9) // cap options at 9
+    )
+  );
+  const { studyItems, recallQuestions } = gameContent;
   const totalRounds = recallQuestions.length;
 
   const [phase, setPhase] = useState<Phase>('study');
@@ -49,40 +55,81 @@ export default function YaadRakhoGame() {
     createSession('yaad-rakho', domain, diffParams.tier)
   );
   const [selected, setSelected] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'wrong' | 'timeout' | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [answerTimeLeft, setAnswerTimeLeft] = useState<number | null>(null);
+  const answerTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  const resetGame = () => {
+    const newDiff = getDifficultyForDomain(useAppStore.getState().domainTiers[domain]);
+    setGameContent(
+      generateMemoryRound(
+        newDiff.itemCount <= 4 ? 3 : 4,
+        Math.min(newDiff.itemCount, 9)
+      )
+    );
+    setSession(createSession('yaad-rakho', domain, newDiff.tier));
+    setRoundIndex(0);
+    setPhase('study');
+    setStudyCountdown(5);
+    setSelected(null);
+    setFeedback(null);
+    setShowResult(false);
+    setAnswerTimeLeft(null);
+  };
 
   // Study phase countdown
   useEffect(() => {
     if (phase !== 'study') return;
     if (studyCountdown === 0) {
       setPhase('recall');
+      if (diffParams.timeLimitMs) {
+        setAnswerTimeLeft(diffParams.timeLimitMs / 1000);
+      }
       return;
     }
     const t = setTimeout(() => setStudyCountdown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [phase, studyCountdown]);
 
+  // Recall phase countdown
+  useEffect(() => {
+    if (phase === 'recall' && answerTimeLeft !== null) {
+      if (answerTimeLeft <= 0) {
+        handleAnswer(null); // timeout
+        return;
+      }
+      answerTimerRef.current = setTimeout(() => setAnswerTimeLeft((c) => (c ? c - 1 : null)), 1000);
+      return () => {
+        if (answerTimerRef.current) clearTimeout(answerTimerRef.current);
+      };
+    }
+  }, [phase, answerTimeLeft, selected]);
+
   const currentQuestion = recallQuestions[roundIndex];
   const isLastRound = roundIndex === totalRounds - 1;
 
-  const handleAnswer = (itemId: string) => {
+  const handleAnswer = (itemId: string | null) => {
     if (selected) return;  // prevent double-tap
+    if (answerTimerRef.current) clearTimeout(answerTimerRef.current);
+    
     const startTime = Date.now();
     const isCorrect = itemId === currentQuestion.target.id;
-    setSelected(itemId);
-    setFeedback(isCorrect ? 'correct' : 'wrong');
+    const isTimeout = itemId === null;
+    
+    setSelected(itemId || 'timeout');
+    setFeedback(isTimeout ? 'timeout' : (isCorrect ? 'correct' : 'wrong'));
 
     const updatedSession = logItem(session, {
       itemId: generateItemId(),
       prompt: `Which one did you see? (${currentQuestion.target.label})`,
       correctAnswer: currentQuestion.target.id,
       userAnswer: itemId,
-      isCorrect,
-      responseTimeMs: Date.now() - startTime,
-      timedOut: false,
+      isCorrect: isTimeout ? false : isCorrect,
+      responseTimeMs: isTimeout ? diffParams.timeLimitMs : (Date.now() - startTime),
+      timedOut: isTimeout,
     });
     setSession(updatedSession);
 
@@ -105,7 +152,9 @@ export default function YaadRakhoGame() {
       } else {
         setRoundIndex((i) => i + 1);
         setSelected(null);
-        setFeedback(null);
+        if (diffParams.timeLimitMs) {
+          setAnswerTimeLeft(diffParams.timeLimitMs / 1000);
+        }
       }
     }, 1200);
   };
@@ -222,8 +271,22 @@ export default function YaadRakhoGame() {
             >
               {feedback === 'correct'
                 ? '✓  Bilkul sahi! शाबाश!'
+                : feedback === 'timeout'
+                ? '⏳ Time is up! समय समाप्त!'
                 : `The right answer was ${currentQuestion.target.emoji} ${currentQuestion.target.label}`}
             </Text>
+          </View>
+        )}
+
+        {/* Timer Bar */}
+        {answerTimeLeft !== null && !selected && (
+          <View style={styles.timerBarContainer}>
+            <View 
+              style={[
+                styles.timerBarFill, 
+                { width: `${(answerTimeLeft / (diffParams.timeLimitMs! / 1000)) * 100}%` }
+              ]} 
+            />
           </View>
         )}
 
@@ -252,7 +315,7 @@ export default function YaadRakhoGame() {
         total={totalRounds}
         domainColor={domainData.color}
         domainName="Yaad Rakho"
-        onPlayAgain={() => router.replace('/(elder)/games/yaad-rakho')}
+        onPlayAgain={resetGame}
         onBack={() => router.push('/(elder)/play')}
       />
     </SafeAreaView>
@@ -302,6 +365,17 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: 4,
+  },
+  timerBarContainer: {
+    height: 6,
+    backgroundColor: Colors.borderLight,
+    borderRadius: Radius.full,
+    marginBottom: Spacing.lg,
+    overflow: 'hidden',
+  },
+  timerBarFill: {
+    height: '100%',
+    backgroundColor: Colors.alertRed,
   },
 
   // Study phase

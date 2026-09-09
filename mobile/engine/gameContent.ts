@@ -27,7 +27,7 @@ export const MEMORY_ITEMS: MemoryItem[] = [
 ];
 
 // Generate a memory round: N items to study, plus distractors for recall
-export function generateMemoryRound(studyCount: number): {
+export function generateMemoryRound(studyCount: number, optionsCount: number = 3): {
   studyItems: MemoryItem[];
   recallQuestions: Array<{ target: MemoryItem; options: MemoryItem[] }>;
 } {
@@ -37,9 +37,8 @@ export function generateMemoryRound(studyCount: number): {
 
   const recallQuestions = studyItems.map((target) => {
     const wrongOptions = distractors
-      .slice(0, 2)
       .filter(d => d.id !== target.id)
-      .slice(0, 2);
+      .slice(0, optionsCount - 1);
     const options = [target, ...wrongOptions].sort(() => Math.random() - 0.5);
     return { target, options };
   });
@@ -88,26 +87,72 @@ export interface OddOneOutRound {
 }
 
 const FRUITS = [
-  { id: 'apple',  label: 'Apple',  emoji: '🍎', category: 'fruit' },
-  { id: 'banana', label: 'Banana', emoji: '🍌', category: 'fruit' },
-  { id: 'orange', label: 'Orange', emoji: '🍊', category: 'fruit' },
-  { id: 'grapes', label: 'Grapes', emoji: '🍇', category: 'fruit' },
-  { id: 'mango',  label: 'Mango',  emoji: '🥭', category: 'fruit' },
+  { id: 'apple',      label: 'Apple',      emoji: '🍎', category: 'fruit' },
+  { id: 'banana',     label: 'Banana',     emoji: '🍌', category: 'fruit' },
+  { id: 'orange',     label: 'Orange',     emoji: '🍊', category: 'fruit' },
+  { id: 'grapes',     label: 'Grapes',     emoji: '🍇', category: 'fruit' },
+  { id: 'mango',      label: 'Mango',      emoji: '🥭', category: 'fruit' },
+  { id: 'pineapple',  label: 'Pineapple',  emoji: '🍍', category: 'fruit' },
+  { id: 'watermelon', label: 'Watermelon', emoji: '🍉', category: 'fruit' },
+  { id: 'strawberry', label: 'Strawberry', emoji: '🍓', category: 'fruit' },
+  { id: 'cherry',     label: 'Cherry',     emoji: '🍒', category: 'fruit' },
 ];
 
 const VEHICLES = [
-  { id: 'car',   label: 'Car',   emoji: '🚗', category: 'vehicle' },
-  { id: 'bus',   label: 'Bus',   emoji: '🚌', category: 'vehicle' },
-  { id: 'train', label: 'Train', emoji: '🚂', category: 'vehicle' },
-  { id: 'bike',  label: 'Bike',  emoji: '🚲', category: 'vehicle' },
+  { id: 'car',        label: 'Car',        emoji: '🚗', category: 'vehicle' },
+  { id: 'bus',        label: 'Bus',        emoji: '🚌', category: 'vehicle' },
+  { id: 'train',      label: 'Train',      emoji: '🚂', category: 'vehicle' },
+  { id: 'bike',       label: 'Bike',       emoji: '🚲', category: 'vehicle' },
+  { id: 'airplane',   label: 'Airplane',   emoji: '✈️', category: 'vehicle' },
+  { id: 'boat',       label: 'Boat',       emoji: '⛵', category: 'vehicle' },
+  { id: 'helicopter', label: 'Helicopter', emoji: '🚁', category: 'vehicle' },
+  { id: 'tractor',    label: 'Tractor',    emoji: '🚜', category: 'vehicle' },
+  { id: 'scooter',    label: 'Scooter',    emoji: '🛵', category: 'vehicle' },
 ];
 
 const ANIMALS = [
-  { id: 'dog',      label: 'Dog',      emoji: '🐶', category: 'animal' },
-  { id: 'cat',      label: 'Cat',      emoji: '🐱', category: 'animal' },
-  { id: 'elephant', label: 'Elephant', emoji: '🐘', category: 'animal' },
-  { id: 'fish',     label: 'Fish',     emoji: '🐟', category: 'animal' },
+  { id: 'dog',        label: 'Dog',        emoji: '🐶', category: 'animal' },
+  { id: 'cat',        label: 'Cat',        emoji: '🐱', category: 'animal' },
+  { id: 'elephant',   label: 'Elephant',   emoji: '🐘', category: 'animal' },
+  { id: 'fish',       label: 'Fish',       emoji: '🐟', category: 'animal' },
+  { id: 'bird',       label: 'Bird',       emoji: '🐦', category: 'animal' },
+  { id: 'monkey',     label: 'Monkey',     emoji: '🐒', category: 'animal' },
+  { id: 'lion',       label: 'Lion',       emoji: '🦁', category: 'animal' },
+  { id: 'tiger',      label: 'Tiger',      emoji: '🐅', category: 'animal' },
+  { id: 'bear',       label: 'Bear',       emoji: '🐻', category: 'animal' },
 ];
+
+export function generateOddOneOutRound(itemCount: number): OddOneOutRound {
+  const categories = [
+    { name: 'fruits', data: FRUITS, text: 'fruits' },
+    { name: 'vehicles', data: VEHICLES, text: 'vehicles' },
+    { name: 'animals', data: ANIMALS, text: 'animals' }
+  ];
+  
+  // Pick random base category
+  const baseCatIndex = Math.floor(Math.random() * categories.length);
+  const baseCategory = categories[baseCatIndex];
+  
+  // Pick random odd category
+  const oddCatIndex = (baseCatIndex + 1 + Math.floor(Math.random() * (categories.length - 1))) % categories.length;
+  const oddCategory = categories[oddCatIndex];
+
+  // Pick (itemCount - 1) base items
+  const shuffledBase = [...baseCategory.data].sort(() => Math.random() - 0.5);
+  const baseItems = shuffledBase.slice(0, Math.min(itemCount - 1, shuffledBase.length));
+  
+  // Pick 1 odd item
+  const shuffledOdd = [...oddCategory.data].sort(() => Math.random() - 0.5);
+  const oddItem = shuffledOdd[0];
+
+  const items = [...baseItems, oddItem].sort(() => Math.random() - 0.5);
+  
+  return {
+    items,
+    oddItemId: oddItem.id,
+    explanation: `${oddItem.label} is an ${oddCategory.text.slice(0, -1)}, the rest are ${baseCategory.text}`
+  };
+}
 
 export const ODD_ONE_OUT_ROUNDS: OddOneOutRound[] = [
   {
@@ -196,6 +241,8 @@ export const ROUTINE_ROUNDS: RoutineRound[] = [
       { id: 'washface',  label: 'Wash face',  hindiLabel: 'मुँह धोना',      emoji: '💧',  order: 2 },
       { id: 'dressed',   label: 'Get dressed', hindiLabel: 'कपड़े पहनना',   emoji: '👕',  order: 3 },
       { id: 'tea',       label: 'Have tea',   hindiLabel: 'चाय पीना',       emoji: '☕',  order: 4 },
+      { id: 'readpaper', label: 'Read Paper', hindiLabel: 'अखबार पढ़ना',   emoji: '📰',  order: 5 },
+      { id: 'breakfast', label: 'Breakfast',  hindiLabel: 'नाश्ता करना',    emoji: '🍳',  order: 6 },
     ],
   },
   {
@@ -204,8 +251,10 @@ export const ROUTINE_ROUNDS: RoutineRound[] = [
     items: [
       { id: 'eveningwalk', label: 'Evening walk', hindiLabel: 'शाम की सैर',  emoji: '🚶', order: 1 },
       { id: 'freshen',     label: 'Freshen up',   hindiLabel: 'ताज़ा होना',   emoji: '🚿', order: 2 },
-      { id: 'dinner',      label: 'Have dinner',  hindiLabel: 'रात का खाना',  emoji: '🍽️', order: 3 },
-      { id: 'medicine',    label: 'Take medicine', hindiLabel: 'दवाई लेना',   emoji: '💊', order: 4 },
+      { id: 'tv',          label: 'Watch TV',     hindiLabel: 'टीवी देखना',     emoji: '📺', order: 3 },
+      { id: 'dinner',      label: 'Have dinner',  hindiLabel: 'रात का खाना',  emoji: '🍽️', order: 4 },
+      { id: 'medicine',    label: 'Take medicine', hindiLabel: 'दवाई लेना',   emoji: '💊', order: 5 },
+      { id: 'sleep',       label: 'Go to sleep',  hindiLabel: 'सो जाना',       emoji: '🛌', order: 6 },
     ],
   },
   {
@@ -214,8 +263,27 @@ export const ROUTINE_ROUNDS: RoutineRound[] = [
     items: [
       { id: 'washands',  label: 'Wash hands',  hindiLabel: 'हाथ धोना',       emoji: '🙌', order: 1 },
       { id: 'sit',       label: 'Sit down',    hindiLabel: 'बैठना',            emoji: '🪑', order: 2 },
-      { id: 'eat',       label: 'Eat food',    hindiLabel: 'खाना खाना',       emoji: '🍛', order: 3 },
-      { id: 'rinse',     label: 'Rinse plate', hindiLabel: 'थाली साफ करना',   emoji: '🧹', order: 4 },
+      { id: 'serve',     label: 'Serve food',  hindiLabel: 'खाना परोसना',    emoji: '🍲', order: 3 },
+      { id: 'eat',       label: 'Eat food',    hindiLabel: 'खाना खाना',       emoji: '🍛', order: 4 },
+      { id: 'rinse',     label: 'Rinse plate', hindiLabel: 'थाली साफ करना',   emoji: '🧹', order: 5 },
+      { id: 'rest',      label: 'Rest',        hindiLabel: 'आराम करना',       emoji: '🛋️', order: 6 },
     ],
   },
 ];
+
+export function generateRoutineRound(roundIndex: number, sequenceLength: number): RoutineRound {
+  const baseRound = ROUTINE_ROUNDS[roundIndex % ROUTINE_ROUNDS.length];
+  // limit sequence length to what's available
+  const len = Math.min(sequenceLength, baseRound.items.length);
+  
+  // Create a sub-sequence of the required length
+  const slicedItems = baseRound.items.slice(0, len).map((item, i) => ({
+    ...item,
+    order: i + 1, // recalculate order just to be safe
+  }));
+
+  return {
+    ...baseRound,
+    items: slicedItems,
+  };
+}

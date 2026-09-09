@@ -14,7 +14,7 @@ import { Colors, Typography, Spacing } from '@/constants/theme';
 import { useAppStore } from '@/store/appStore';
 import i18n from '@/services/i18n';
 import { audioService } from '@/services/AudioService';
-
+import FloatingChatButton from '@/components/FloatingChatButton';
 // Exact colors from Figma
 const F = {
   headerBg: '#24402E',
@@ -226,17 +226,7 @@ export default function HomeScreen() {
       </Animated.ScrollView>
 
       {/* Floating Chat Button */}
-      <View style={[styles.fabWrapper, { bottom: insets.bottom + Spacing.xl }]}>
-        <View style={[styles.fabShadow, { backgroundColor: F.upNextDark }]} />
-        <TouchableOpacity 
-          style={[styles.fab, { backgroundColor: F.headerBg, borderColor: F.upNextDark }]}
-          activeOpacity={0.8}
-          accessible={true}
-          accessibilityLabel="Chat with Assistant"
-        >
-          <FontAwesome5 name="comment-dots" size={24} color="#FFF" />
-        </TouchableOpacity>
-      </View>
+      <FloatingChatButton />
     </View>
   );
 }
@@ -360,13 +350,13 @@ const styles = StyleSheet.create({
   },
   tile: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
     borderWidth: 1.5,
     padding: 0,
+    minHeight: 85,
   },
   tileIconBox: {
     width: 80,
-    height: 85,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -389,28 +379,4 @@ const styles = StyleSheet.create({
   tileArrow: {
     paddingRight: Spacing.lg,
   },
-  // FAB
-  fabWrapper: {
-    position: 'absolute',
-    right: Spacing.xl,
-    width: 64,
-    height: 64,
-  },
-  fabShadow: {
-    position: 'absolute',
-    top: 4,
-    left: 4,
-    right: -4,
-    bottom: -4,
-    borderRadius: 32,
-  },
-  fab: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-  },
 });
-

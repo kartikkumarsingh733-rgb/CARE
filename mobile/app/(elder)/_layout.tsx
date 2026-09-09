@@ -1,37 +1,9 @@
 // Elder Mode tab navigator — 5 tabs matching the screenshots exactly
 // Tab colors use domain gold for active state, dark background
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors, Typography, Spacing } from '@/constants/theme';
-
-function TabIcon({
-  icon,
-  label,
-  focused,
-}: {
-  icon: string;
-  label: string;
-  focused: boolean;
-}) {
-  return (
-    <View style={[styles.tabItem, focused && styles.tabItemFocused]}>
-      <FontAwesome5 
-        name={icon} 
-        size={22} 
-        color={focused ? '#FFFFFF' : '#D4C5B9'} 
-      />
-      <Text
-        style={[
-          styles.tabLabel,
-          { color: focused ? '#FFFFFF' : '#D4C5B9' },
-        ]}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-}
 
 export default function ElderTabLayout() {
   return (
@@ -39,46 +11,55 @@ export default function ElderTabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#FFFFFF',
+        tabBarInactiveTintColor: '#D4C5B9',
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarActiveBackgroundColor: '#24402E', // Active green background
+        tabBarItemStyle: styles.tabItem,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="home" label="Home" focused={focused} />
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="home" size={22} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="play"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="puzzle-piece" label="Play" focused={focused} />
+          tabBarLabel: 'Play',
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="puzzle-piece" size={22} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="myday"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="calendar-alt" label="My Day" focused={focused} />
+          tabBarLabel: 'My Day',
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="calendar-alt" size={22} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="memories"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="image" label="Memories" focused={focused} />
+          tabBarLabel: 'Memories',
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="image" size={22} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="help"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="exclamation-circle" label="Help" focused={focused} />
+          tabBarLabel: 'Help',
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="exclamation-circle" size={22} color={color} />
           ),
         }}
       />
@@ -95,23 +76,19 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: '#2C1E14', // Lighter brown
     borderTopWidth: 0,
-    height: 70,
-    paddingBottom: 0,
-    paddingHorizontal: 0,
+    height: Platform.OS === 'ios' ? 90 : 70,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+    paddingTop: 8,
   },
   tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    width: '100%',
-  },
-  tabItemFocused: {
-    backgroundColor: '#24402E', // Active green background from header
+    paddingVertical: 4,
+    marginHorizontal: 4,
+    borderRadius: 8,
   },
   tabLabel: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: 13,
-    marginTop: 4,
+    fontSize: 12,
+    marginTop: 2,
   },
 });
 

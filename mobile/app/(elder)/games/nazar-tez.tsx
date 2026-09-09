@@ -47,29 +47,66 @@ export default function NazarTezGame() {
   const [session, setSession] = useState<GameSession>(
     createSession('nazar-tez', domain, diffParams.tier)
   );
-  const [currentRound, setCurrentRound] = useState(generateSearchRound(6));
+  const [currentRound, setCurrentRound] = useState(() => generateSearchRound(diffParams.itemCount));
   const [selected, setSelected] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'wrong' | 'timeout' | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [roundStartTime, setRoundStartTime] = useState(Date.now());
+  const [answerTimeLeft, setAnswerTimeLeft] = useState<number | null>(
+    diffParams.timeLimitMs ? diffParams.timeLimitMs / 1000 : null
+  );
+  const answerTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const resetGame = () => {
+    const newDiff = getDifficultyForDomain(useAppStore.getState().domainTiers[domain]);
+    setCurrentRound(generateSearchRound(newDiff.itemCount));
+    setSession(createSession('nazar-tez', domain, newDiff.tier));
+    setRoundIndex(0);
+    setSelected(null);
+    setFeedback(null);
+    setShowResult(false);
+    setRoundStartTime(Date.now());
+    if (newDiff.timeLimitMs) {
+      setAnswerTimeLeft(newDiff.timeLimitMs / 1000);
+    } else {
+      setAnswerTimeLeft(null);
+    }
+  };
+
+  useEffect(() => {
+    if (answerTimeLeft !== null && !selected) {
+      if (answerTimeLeft <= 0) {
+        handleAnswer(null); // timeout
+        return;
+      }
+      answerTimerRef.current = setTimeout(() => setAnswerTimeLeft((c) => (c ? c - 1 : null)), 1000);
+      return () => {
+        if (answerTimerRef.current) clearTimeout(answerTimerRef.current);
+      };
+    }
+  }, [answerTimeLeft, selected]);
 
   const isLastRound = roundIndex === ROUNDS_PER_GAME - 1;
   const correctCount = session.items.filter((i) => i.isCorrect).length;
 
-  const handleAnswer = (item: AttentionItem) => {
+  const handleAnswer = (item: AttentionItem | null) => {
     if (selected) return;
-    const isCorrect = item.id === currentRound.target.id;
-    setSelected(item.id);
-    setFeedback(isCorrect ? 'correct' : 'wrong');
+    if (answerTimerRef.current) clearTimeout(answerTimerRef.current);
+
+    const isTimeout = item === null;
+    const isCorrect = item ? item.id === currentRound.target.id : false;
+    
+    setSelected(item?.id || 'timeout');
+    setFeedback(isTimeout ? 'timeout' : (isCorrect ? 'correct' : 'wrong'));
 
     const updatedSession = logItem(session, {
       itemId: generateItemId(),
       prompt: `Find: ${currentRound.target.label}`,
       correctAnswer: currentRound.target.id,
-      userAnswer: item.id,
-      isCorrect,
-      responseTimeMs: Date.now() - roundStartTime,
-      timedOut: false,
+      userAnswer: item?.id || null,
+      isCorrect: isTimeout ? false : isCorrect,
+      responseTimeMs: isTimeout ? diffParams.timeLimitMs : (Date.now() - roundStartTime),
+      timedOut: isTimeout,
     });
     setSession(updatedSession);
 
@@ -87,10 +124,13 @@ export default function NazarTezGame() {
         setShowResult(true);
       } else {
         setRoundIndex((i) => i + 1);
-        setCurrentRound(generateSearchRound(6));
+        setCurrentRound(generateSearchRound(diffParams.itemCount));
         setSelected(null);
         setFeedback(null);
         setRoundStartTime(Date.now());
+        if (diffParams.timeLimitMs) {
+          setAnswerTimeLeft(diffParams.timeLimitMs / 1000);
+        }
       }
     }, 1200);
   };
@@ -154,8 +194,22 @@ export default function NazarTezGame() {
             >
               {feedback === 'correct'
                 ? '✓  Bilkul sahi! शाबाश!'
+                : feedback === 'timeout'
+                ? '⏳ Time is up! समय समाप्त!'
                 : `The ${currentRound.target.emoji} ${currentRound.target.label} was there!`}
             </Text>
+          </View>
+        )}
+
+        {/* Timer Bar */}
+        {answerTimeLeft !== null && !selected && (
+          <View style={styles.timerBarContainer}>
+            <View 
+              style={[
+                styles.timerBarFill, 
+                { width: `${(answerTimeLeft / (diffParams.timeLimitMs! / 1000)) * 100}%` }
+              ]} 
+            />
           </View>
         )}
 
@@ -186,7 +240,7 @@ export default function NazarTezGame() {
         total={ROUNDS_PER_GAME}
         domainColor={domainData.color}
         domainName="Nazar Tez"
-        onPlayAgain={() => router.replace('/(elder)/games/nazar-tez')}
+        onPlayAgain={resetGame}
         onBack={() => router.push('/(elder)/play')}
       />
     </SafeAreaView>
@@ -232,6 +286,17 @@ const styles = StyleSheet.create({
   },
   progressBarBg: { height: 4, backgroundColor: Colors.borderLight },
   progressBarFill: { height: 4 },
+  timerBarContainer: {
+    height: 6,
+    backgroundColor: Colors.borderLight,
+    borderRadius: Radius.full,
+    marginBottom: Spacing.md,
+    overflow: 'hidden',
+  },
+  timerBarFill: {
+    height: '100%',
+    backgroundColor: Colors.alertRed,
+  },
   content: { flex: 1, padding: Spacing.lg },
   targetBox: {
     borderWidth: 1,

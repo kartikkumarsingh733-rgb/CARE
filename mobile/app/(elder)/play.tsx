@@ -18,12 +18,11 @@ import FloatingChatButton from '@/components/FloatingChatButton';
 interface GameCardProps {
   domain: DomainKey;
   gameName: string;
-  hindiName: string;
   description: string;
   route: string;
 }
 
-function GameCard({ domain, gameName, hindiName, description, route }: GameCardProps) {
+function GameCard({ domain, gameName, description, route }: GameCardProps) {
   const router = useRouter();
   const domainData = Domains[domain];
   const tier = useAppStore(state => state.domainTiers[domain]);
@@ -38,7 +37,7 @@ function GameCard({ domain, gameName, hindiName, description, route }: GameCardP
         <View style={styles.cardInfo}>
           <Text style={styles.gameName}>{gameName}</Text>
           <Text style={styles.gameHindi}>
-            {hindiName} · {domainData.label}
+            {domainData.label}
           </Text>
           <Text style={styles.gameDesc}>{description}</Text>
           <View style={[styles.diffBadge, { borderColor: domainData.color }]}>
@@ -58,6 +57,8 @@ function GameCard({ domain, gameName, hindiName, description, route }: GameCardP
 }
 
 export default function PlayScreen() {
+  const router = useRouter();
+  
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView
@@ -66,10 +67,17 @@ export default function PlayScreen() {
       >
         {/* Header */}
         <View style={[styles.pageHeader, { backgroundColor: Colors.domainMemory, shadowColor: Colors.domainMemoryShadow }]}>
-          <Text style={styles.pageTitle}>Let's Play</Text>
-          <Text style={styles.pageSubtitle}>
-            Choose a game below. Take your time.
-          </Text>
+          <View style={styles.headerRow}>
+            <View>
+              <Text style={styles.pageTitle}>Let's Play</Text>
+              <Text style={styles.pageSubtitle}>
+                Choose a game below. Take your time.
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push('/caregiver-pin')} style={styles.gearBtn} accessible={true} accessibilityLabel="Caregiver Settings">
+              <Text style={styles.gearIcon}>⚙️</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Activity nudge */}
@@ -84,28 +92,24 @@ export default function PlayScreen() {
           <GameCard
             domain="memory"
             gameName="Yaad Rakho"
-            hindiName="याद रखो"
             description="Look at pictures and try to remember them."
             route="/(elder)/games/yaad-rakho"
           />
           <GameCard
             domain="attention"
             gameName="Nazar Tez"
-            hindiName="नज़र तेज़"
             description="Find the picture in the grid before time is up."
             route="/(elder)/games/nazar-tez"
           />
           <GameCard
             domain="patterns"
             gameName="Milan"
-            hindiName="मिलान"
             description="Tap the picture that does not belong with the others."
             route="/(elder)/games/milan"
           />
           <GameCard
             domain="recall"
             gameName="Mera Din"
-            hindiName="मेरा दिन"
             description="Put your morning routine in the right order."
             route="/(elder)/games/mera-din"
           />
@@ -140,6 +144,19 @@ const styles = StyleSheet.create({
     fontSize: Typography.size.md,
     color: 'rgba(255,255,255,0.85)',
     marginTop: 4,
+  },
+  headerRow: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center'
+  },
+  gearBtn: {
+    padding: Spacing.sm,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    borderRadius: Radius.circle,
+  },
+  gearIcon: {
+    fontSize: 24,
   },
   nudgeBox: {
     marginHorizontal: Spacing.lg,

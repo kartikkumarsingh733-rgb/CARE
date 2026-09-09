@@ -18,13 +18,12 @@ export interface PatientProfile {
 
 export interface Reminder {
   id: string;
-  time: string; // "8:00 AM" or actual Date/ISO string, will keep it simple for now
+  time: string;
   title: string;
   subtitle: string;
-  emoji: string;
+  icon: string;
   color: string;
   done: boolean;
-  isNext?: boolean;
   notificationId?: string; // To track local notifications
 }
 
@@ -53,13 +52,15 @@ const DEFAULT_PATIENT: PatientProfile = {
   themePack: 'default',
 };
 
-// Start with some default reminders for demo purposes
+// Start with some default reminders for demo purposes matching Figma
 const DEFAULT_REMINDERS: Reminder[] = [
-  { id: '1', time: '8:00 AM', title: 'Morning Medicine', subtitle: '2 tablets with water', emoji: '💊', color: '#1B263B', done: false },
-  { id: '2', time: '9:00 AM', title: 'Breakfast', subtitle: 'Idli and sambar', emoji: '🍽️', color: '#E07A5F', done: false },
-  { id: '3', time: '11:00 AM', title: 'Drink Water', subtitle: 'A full glass of water', emoji: '💧', color: '#005F73', done: false },
-  { id: '4', time: '1:00 PM', title: 'Afternoon Medicine', subtitle: '2 tablets with water', emoji: '💊', color: '#1B263B', done: false },
-  { id: '5', time: '1:30 PM', title: 'Lunch', subtitle: 'Dal, rice and sabzi', emoji: '🍛', color: '#E07A5F', done: false },
+  { id: '1', time: '8:00 AM', title: 'Morning Medicine', subtitle: '2 tablets with water', icon: 'medication', color: '#B3A38F', done: true },
+  { id: '2', time: '9:00 AM', title: 'Breakfast', subtitle: 'Idli and sambar', icon: 'restaurant', color: '#B3A38F', done: true },
+  { id: '3', time: '11:00 AM', title: 'Drink Water', subtitle: 'A full glass of water', icon: 'local-drink', color: '#B3A38F', done: true },
+  { id: '4', time: '1:00 PM', title: 'Afternoon Medicine', subtitle: '2 tablets with water', icon: 'local-cafe', color: '#C4822A', done: false },
+  { id: '5', time: '1:30 PM', title: 'Lunch', subtitle: 'Dal, rice and sabzi', icon: 'restaurant', color: '#366184', done: false },
+  { id: '6', time: '4:00 PM', title: 'Evening Walk', subtitle: '15 minutes in the garden', icon: 'directions-walk', color: '#366184', done: false },
+  { id: '7', time: '5:00 PM', title: 'Priya Visits', subtitle: 'Daughter is coming', icon: 'people', color: '#586C32', done: false },
 ];
 
 export const useAppStore = create<AppState>()(
@@ -114,7 +115,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'cognicare-app-store',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 2, // Bump version
+      version: 3, // Bump version
     }
   )
 );
