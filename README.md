@@ -1,8 +1,8 @@
-# CARE - Elder Care & Cognitive Monitoring System
+# CogniCare - Elder Care & Cognitive Monitoring System
 
 ## 1. Project Information
 
-- **Project Title:** CARE (CogniCare)
+- **Project Title:** CogniCare
 - **PS ID:** [ENTER YOUR PS ID HERE]
 - **PS Title:** [ENTER YOUR PS TITLE HERE]
 - **Category:** Software
@@ -14,7 +14,7 @@ Elderly individuals often struggle with daily routines, medication adherence, an
 
 ## 3. Proposed Solution
 
-CARE is a dual-persona mobile application designed specifically for both elders and their caregivers. 
+**CogniCare** is a dual-persona mobile application designed specifically for both elders and their caregivers. 
 
 For **Elders**, the app provides a highly accessible, high-contrast, and simplified interface (Elder Mode) that focuses on daily routines, medication reminders, and easy access to emergency contacts.
 For **Caregivers**, the app provides a comprehensive dashboard (Caregiver Mode) allowing them to track the elder's tasks, assign new routines, monitor medication adherence, and receive critical alerts in real-time. The app functions entirely offline-first, syncing data automatically when a connection is available.
