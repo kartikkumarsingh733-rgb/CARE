@@ -60,6 +60,12 @@ export default function CaregiverTabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="patient-profile"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

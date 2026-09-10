@@ -14,6 +14,7 @@ import { Domains, type DomainKey } from '@/constants/theme';
 import { getDifficultyLabel } from '@/engine/difficultyEngine';
 import { useAppStore } from '@/store/appStore';
 import FloatingChatButton from '@/components/FloatingChatButton';
+import i18n from '@/services/i18n';
 
 interface GameCardProps {
   domain: DomainKey;
@@ -35,11 +36,11 @@ function GameCard({ domain, gameName, description, route }: GameCardProps) {
           <Text style={styles.iconEmoji}>{domainData.icon}</Text>
         </View>
         <View style={styles.cardInfo}>
-          <Text style={styles.gameName}>{gameName}</Text>
+          <Text style={styles.gameName}>{i18n.t(gameName)}</Text>
           <Text style={styles.gameHindi}>
-            {domainData.label}
+            {i18n.t(domainData.i18nKey)}
           </Text>
-          <Text style={styles.gameDesc}>{description}</Text>
+          <Text style={styles.gameDesc}>{i18n.t(description)}</Text>
           <View style={[styles.diffBadge, { borderColor: domainData.color }]}>
             <Text style={[styles.diffText, { color: domainData.color }]}>{difficultyLabel}</Text>
           </View>
@@ -50,7 +51,7 @@ function GameCard({ domain, gameName, description, route }: GameCardProps) {
         onPress={() => router.push(route as any)}
         activeOpacity={0.85}
       >
-        <Text style={styles.playBtnText}>Play Now</Text>
+        <Text style={styles.playBtnText}>{i18n.t('play_now')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -58,6 +59,8 @@ function GameCard({ domain, gameName, description, route }: GameCardProps) {
 
 export default function PlayScreen() {
   const router = useRouter();
+  const language = useAppStore(state => state.patient.preferredLanguage);
+  i18n.locale = language || 'en';
   
   return (
     <SafeAreaView style={styles.safe}>
@@ -69,9 +72,9 @@ export default function PlayScreen() {
         <View style={[styles.pageHeader, { backgroundColor: Colors.domainMemory, shadowColor: Colors.domainMemoryShadow }]}>
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.pageTitle}>Let's Play</Text>
+              <Text style={styles.pageTitle}>{i18n.t('play_title')}</Text>
               <Text style={styles.pageSubtitle}>
-                Choose a game below. Take your time.
+                {i18n.t('play_desc')}
               </Text>
             </View>
             <TouchableOpacity onPress={() => router.push('/caregiver-pin')} style={styles.gearBtn} accessible={true} accessibilityLabel="Caregiver Settings">
@@ -91,26 +94,26 @@ export default function PlayScreen() {
         <View style={styles.cardsList}>
           <GameCard
             domain="memory"
-            gameName="Yaad Rakho"
-            description="Look at pictures and try to remember them."
+            gameName="game_yaad_rakho"
+            description="game_yaad_rakho_desc"
             route="/(elder)/games/yaad-rakho"
           />
           <GameCard
             domain="attention"
-            gameName="Nazar Tez"
-            description="Find the picture in the grid before time is up."
+            gameName="game_nazar_tez"
+            description="game_nazar_tez_desc"
             route="/(elder)/games/nazar-tez"
           />
           <GameCard
             domain="patterns"
-            gameName="Milan"
-            description="Tap the picture that does not belong with the others."
+            gameName="game_milan"
+            description="game_milan_desc"
             route="/(elder)/games/milan"
           />
           <GameCard
             domain="recall"
-            gameName="Mera Din"
-            description="Put your morning routine in the right order."
+            gameName="game_mera_din"
+            description="game_mera_din_desc"
             route="/(elder)/games/mera-din"
           />
         </View>

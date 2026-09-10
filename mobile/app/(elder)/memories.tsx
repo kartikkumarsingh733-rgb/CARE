@@ -14,41 +14,45 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import FloatingChatButton from '@/components/FloatingChatButton';
 import { audioService } from '@/services/AudioService';
+import i18n from '@/services/i18n';
+import { useAppStore } from '@/store/appStore';
 
 // Contact Data
 const CONTACTS = [
   {
     id: '1',
     name: 'Priya',
-    relation: 'Your Daughter',
-    description: 'She lives nearby and visits every evening.',
+    relationKey: 'contact1_rel',
+    descriptionKey: 'contact1_desc',
     imageUrl: 'https://i.pravatar.cc/150?img=47', 
     btnColor: '#2B5336', 
-    phone: 'Call Priya',
+    phoneKey: 'contact1_call',
   },
   {
     id: '2',
     name: 'Suresh',
-    relation: 'Your Son',
-    description: 'He lives in Pune. He calls you every Sunday morning.',
+    relationKey: 'contact2_rel',
+    descriptionKey: 'contact2_desc',
     imageUrl: 'https://i.pravatar.cc/150?img=11',
     btnColor: '#3B627A',
-    phone: 'Call Suresh',
+    phoneKey: 'contact2_call',
   },
   {
     id: '3',
     name: 'Kavya',
-    relation: 'Your Granddaughter',
-    description: "Priya's daughter. She is 8 years old and loves drawing.",
+    relationKey: 'contact3_rel',
+    descriptionKey: 'contact3_desc',
     imageUrl: 'https://i.pravatar.cc/150?img=5',
     btnColor: '#586C32',
-    phone: 'Call Kavya',
+    phoneKey: 'contact3_call',
   },
 ];
 
 export default function MemoriesScreen() {
   const router = useRouter();
   const scrollY = useRef(new Animated.Value(0)).current;
+  const language = useAppStore(state => state.patient.preferredLanguage);
+  i18n.locale = language || 'en';
 
   const handleCall = (name: string) => {
     console.log(`Calling ${name}`);
@@ -99,7 +103,7 @@ export default function MemoriesScreen() {
         )}
         scrollEventThrottle={16}
       >
-        <Text style={[styles.sectionLabel, { color: '#9A7249' }]}>WHO AM I</Text>
+        <Text style={[styles.sectionLabel, { color: '#9A7249' }]}>{i18n.t('memories_who_am_i')}</Text>
         
         {/* Profile Card */}
         <View style={styles.profileWrapper}>
@@ -111,50 +115,49 @@ export default function MemoriesScreen() {
               <Image source={{ uri: 'https://i.pravatar.cc/150?img=68' }} style={styles.profileImage} />
               <View style={[styles.profileInfo, { backgroundColor: '#2B5336' }]}>
                 <Text style={styles.profileName}>Ramesh Kumar</Text>
-                <Text style={styles.profileSubtitle}>Retired School Teacher</Text>
+                <Text style={styles.profileSubtitle}>{i18n.t('profile_role')}</Text>
                 <View style={styles.profileBadge}>
-                  <Text style={styles.profileBadgeText}>78 years old</Text>
+                  <Text style={styles.profileBadgeText}>{i18n.t('profile_age')}</Text>
                 </View>
               </View>
             </View>
 
-            {/* Bottom Grid (Details) */}
             <View style={styles.profileGrid}>
               <View style={styles.gridRow}>
                 <View style={styles.gridCol}>
-                  <Text style={styles.gridLabel}>BORN</Text>
-                  <Text style={styles.gridValue}>12 March 1947</Text>
+                  <Text style={styles.gridLabel}>{i18n.t('memories_born')}</Text>
+                  <Text style={styles.gridValue}>{i18n.t('profile_date')}</Text>
                 </View>
                 <View style={styles.gridCol}>
-                  <Text style={styles.gridLabel}>BLOOD GROUP</Text>
+                  <Text style={styles.gridLabel}>{i18n.t('memories_blood')}</Text>
                   <Text style={styles.gridValue}>B+</Text>
                 </View>
               </View>
               <View style={styles.gridRow}>
                 <View style={styles.gridCol}>
-                  <Text style={styles.gridLabel}>LIVES AT</Text>
-                  <Text style={styles.gridValue}>14, Jayanagar,{'\n'}Bangalore</Text>
+                  <Text style={styles.gridLabel}>{i18n.t('memories_lives_at')}</Text>
+                  <Text style={styles.gridValue}>{i18n.t('profile_address')}</Text>
                 </View>
                 <View style={styles.gridCol}>
-                  <Text style={styles.gridLabel}>NATIVE PLACE</Text>
-                  <Text style={styles.gridValue}>Mysuru, Karnataka</Text>
+                  <Text style={styles.gridLabel}>{i18n.t('memories_native')}</Text>
+                  <Text style={styles.gridValue}>{i18n.t('profile_native')}</Text>
                 </View>
               </View>
               <View style={styles.gridRow}>
                 <View style={styles.gridCol}>
-                  <Text style={styles.gridLabel}>LANGUAGES</Text>
-                  <Text style={styles.gridValue}>Kannada, Hindi,{'\n'}English</Text>
+                  <Text style={styles.gridLabel}>{i18n.t('memories_languages')}</Text>
+                  <Text style={styles.gridValue}>{i18n.t('profile_langs')}</Text>
                 </View>
                 <View style={styles.gridCol}>
-                  <Text style={styles.gridLabel}>FAVOURITE FOOD</Text>
-                  <Text style={styles.gridValue}>Idli & filter coffee</Text>
+                  <Text style={styles.gridLabel}>{i18n.t('memories_food')}</Text>
+                  <Text style={styles.gridValue}>{i18n.t('profile_food_val')}</Text>
                 </View>
               </View>
             </View>
           </View>
         </View>
 
-        <Text style={[styles.sectionLabel, { color: '#9A7249', marginTop: Spacing.xl }]}>YOUR FAMILY</Text>
+        <Text style={[styles.sectionLabel, { color: '#9A7249', marginTop: Spacing.xl }]}>{i18n.t('memories_your_family')}</Text>
 
         <View style={styles.list}>
           {CONTACTS.map((contact) => (
@@ -165,8 +168,8 @@ export default function MemoriesScreen() {
                   <Image source={{ uri: contact.imageUrl }} style={styles.contactImage} />
                   <View style={styles.cardInfo}>
                     <Text style={styles.contactName}>{contact.name}</Text>
-                    <Text style={[styles.contactRelation, { color: contact.btnColor }]}>{contact.relation}</Text>
-                    <Text style={styles.contactDesc}>{contact.description}</Text>
+                    <Text style={[styles.contactRelation, { color: contact.btnColor }]}>{i18n.t(contact.relationKey)}</Text>
+                    <Text style={styles.contactDesc}>{i18n.t(contact.descriptionKey)}</Text>
                   </View>
                 </View>
                 <TouchableOpacity
@@ -177,7 +180,7 @@ export default function MemoriesScreen() {
                   accessibilityLabel={`Call ${contact.name}`}
                 >
                   <FontAwesome5 name="phone-alt" size={16} color="#FFF" style={styles.callIcon} />
-                  <Text style={styles.callBtnText}>{contact.phone}</Text>
+                  <Text style={styles.callBtnText}>{i18n.t(contact.phoneKey)}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -189,13 +192,13 @@ export default function MemoriesScreen() {
             <View style={styles.rememberCard}>
               <View style={[styles.rememberLeftBar, { backgroundColor: '#586C32' }]} />
               <View style={styles.rememberContent}>
-                <Text style={styles.rememberTitle}>REMEMBER THIS</Text>
-                <Text style={styles.rememberText}>You live at 14, Jayanagar, Bangalore.</Text>
+                <Text style={styles.rememberTitle}>{i18n.t('memories_remember_this')}</Text>
+                <Text style={styles.rememberText}>{i18n.t('remember_desc')}</Text>
                 <Text style={styles.rememberContact}>
-                  Priya's phone: <Text style={styles.rememberNumber}>98765-43210</Text>
+                  {i18n.t('remember_priya_phone')} <Text style={styles.rememberNumber}>98765-43210</Text>
                 </Text>
                 <Text style={styles.rememberContact}>
-                  Home phone: <Text style={styles.rememberNumber}>080-2234-5678</Text>
+                  {i18n.t('memories_home_phone')} <Text style={styles.rememberNumber}>080-2234-5678</Text>
                 </Text>
               </View>
             </View>

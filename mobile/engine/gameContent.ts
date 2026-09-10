@@ -6,24 +6,23 @@
 
 export interface MemoryItem {
   id: string;
-  label: string;
-  hindiLabel: string;
+  i18nKey: string;
   emoji: string;
 }
 
 export const MEMORY_ITEMS: MemoryItem[] = [
-  { id: 'book',     label: 'Book',     hindiLabel: 'किताब',   emoji: '📚' },
-  { id: 'spoon',    label: 'Spoon',    hindiLabel: 'चम्मच',   emoji: '🥄' },
-  { id: 'elephant', label: 'Elephant', hindiLabel: 'हाथी',    emoji: '🐘' },
-  { id: 'apple',    label: 'Apple',    hindiLabel: 'सेब',     emoji: '🍎' },
-  { id: 'cup',      label: 'Cup',      hindiLabel: 'कप',      emoji: '☕' },
-  { id: 'fish',     label: 'Fish',     hindiLabel: 'मछली',    emoji: '🐟' },
-  { id: 'banana',   label: 'Banana',   hindiLabel: 'केला',    emoji: '🍌' },
-  { id: 'star',     label: 'Star',     hindiLabel: 'तारा',    emoji: '⭐' },
-  { id: 'flower',   label: 'Flower',   hindiLabel: 'फूल',     emoji: '🌸' },
-  { id: 'car',      label: 'Car',      hindiLabel: 'गाड़ी',   emoji: '🚗' },
-  { id: 'key',      label: 'Key',      hindiLabel: 'चाबी',    emoji: '🔑' },
-  { id: 'orange',   label: 'Orange',   hindiLabel: 'संतरा',   emoji: '🍊' },
+  { id: 'book',     i18nKey: 'item_book',     emoji: '📚' },
+  { id: 'spoon',    i18nKey: 'item_spoon',    emoji: '🥄' },
+  { id: 'elephant', i18nKey: 'item_elephant', emoji: '🐘' },
+  { id: 'apple',    i18nKey: 'item_apple',    emoji: '🍎' },
+  { id: 'cup',      i18nKey: 'item_cup',      emoji: '☕' },
+  { id: 'fish',     i18nKey: 'item_fish',     emoji: '🐟' },
+  { id: 'banana',   i18nKey: 'item_banana',   emoji: '🍌' },
+  { id: 'star',     i18nKey: 'item_star',     emoji: '⭐' },
+  { id: 'flower',   i18nKey: 'item_flower',   emoji: '🌸' },
+  { id: 'car',      i18nKey: 'item_car',      emoji: '🚗' },
+  { id: 'key',      i18nKey: 'item_key',      emoji: '🔑' },
+  { id: 'orange',   i18nKey: 'item_orange',   emoji: '🍊' },
 ];
 
 // Generate a memory round: N items to study, plus distractors for recall
@@ -49,22 +48,21 @@ export function generateMemoryRound(studyCount: number, optionsCount: number = 3
 // ─── Nazar Tez (Attention — Visual Search) ────────────────────────────────────
 export interface AttentionItem {
   id: string;
-  label: string;
-  hindiLabel: string;
+  i18nKey: string;
   emoji: string;
 }
 
 export const ATTENTION_ITEMS: AttentionItem[] = [
-  { id: 'fish',   label: 'Fish',   hindiLabel: 'मछली',  emoji: '🐟' },
-  { id: 'car',    label: 'Car',    hindiLabel: 'गाड़ी', emoji: '🚗' },
-  { id: 'grapes', label: 'Grapes', hindiLabel: 'अंगूर', emoji: '🍇' },
-  { id: 'spoon',  label: 'Spoon',  hindiLabel: 'चम्मच', emoji: '🥄' },
-  { id: 'star',   label: 'Star',   hindiLabel: 'तारा',  emoji: '⭐' },
-  { id: 'cup',    label: 'Cup',    hindiLabel: 'कप',    emoji: '☕' },
-  { id: 'apple',  label: 'Apple',  hindiLabel: 'सेब',   emoji: '🍎' },
-  { id: 'key',    label: 'Key',    hindiLabel: 'चाबी',  emoji: '🔑' },
-  { id: 'flower', label: 'Flower', hindiLabel: 'फूल',   emoji: '🌸' },
-  { id: 'banana', label: 'Banana', hindiLabel: 'केला',  emoji: '🍌' },
+  { id: 'fish',   i18nKey: 'item_fish',   emoji: '🐟' },
+  { id: 'car',    i18nKey: 'item_car',    emoji: '🚗' },
+  { id: 'grapes', i18nKey: 'item_grapes', emoji: '🍇' },
+  { id: 'spoon',  i18nKey: 'item_spoon',  emoji: '🥄' },
+  { id: 'star',   i18nKey: 'item_star',   emoji: '⭐' },
+  { id: 'cup',    i18nKey: 'item_cup',    emoji: '☕' },
+  { id: 'apple',  i18nKey: 'item_apple',  emoji: '🍎' },
+  { id: 'key',    i18nKey: 'item_key',    emoji: '🔑' },
+  { id: 'flower', i18nKey: 'item_flower', emoji: '🌸' },
+  { id: 'banana', i18nKey: 'item_banana', emoji: '🍌' },
 ];
 
 // Generate a visual search round: pick a target, fill grid with distractors
@@ -81,45 +79,45 @@ export function generateSearchRound(gridSize: number): {
 
 // ─── Milan (Patterns — Odd One Out) ───────────────────────────────────────────
 export interface OddOneOutRound {
-  items: Array<{ id: string; label: string; emoji: string; category: string }>;
+  items: Array<{ id: string; i18nKey: string; emoji: string; category: string }>;
   oddItemId: string;
-  explanation: string;
+  explanationKey: string;
 }
 
 const FRUITS = [
-  { id: 'apple',      label: 'Apple',      emoji: '🍎', category: 'fruit' },
-  { id: 'banana',     label: 'Banana',     emoji: '🍌', category: 'fruit' },
-  { id: 'orange',     label: 'Orange',     emoji: '🍊', category: 'fruit' },
-  { id: 'grapes',     label: 'Grapes',     emoji: '🍇', category: 'fruit' },
-  { id: 'mango',      label: 'Mango',      emoji: '🥭', category: 'fruit' },
-  { id: 'pineapple',  label: 'Pineapple',  emoji: '🍍', category: 'fruit' },
-  { id: 'watermelon', label: 'Watermelon', emoji: '🍉', category: 'fruit' },
-  { id: 'strawberry', label: 'Strawberry', emoji: '🍓', category: 'fruit' },
-  { id: 'cherry',     label: 'Cherry',     emoji: '🍒', category: 'fruit' },
+  { id: 'apple',      i18nKey: 'item_apple',      emoji: '🍎', category: 'cat_fruit' },
+  { id: 'banana',     i18nKey: 'item_banana',     emoji: '🍌', category: 'cat_fruit' },
+  { id: 'orange',     i18nKey: 'item_orange',     emoji: '🍊', category: 'cat_fruit' },
+  { id: 'grapes',     i18nKey: 'item_grapes',     emoji: '🍇', category: 'cat_fruit' },
+  { id: 'mango',      i18nKey: 'item_mango',      emoji: '🥭', category: 'cat_fruit' },
+  { id: 'pineapple',  i18nKey: 'item_pineapple',  emoji: '🍍', category: 'cat_fruit' },
+  { id: 'watermelon', i18nKey: 'item_watermelon', emoji: '🍉', category: 'cat_fruit' },
+  { id: 'strawberry', i18nKey: 'item_strawberry', emoji: '🍓', category: 'cat_fruit' },
+  { id: 'cherry',     i18nKey: 'item_cherry',     emoji: '🍒', category: 'cat_fruit' },
 ];
 
 const VEHICLES = [
-  { id: 'car',        label: 'Car',        emoji: '🚗', category: 'vehicle' },
-  { id: 'bus',        label: 'Bus',        emoji: '🚌', category: 'vehicle' },
-  { id: 'train',      label: 'Train',      emoji: '🚂', category: 'vehicle' },
-  { id: 'bike',       label: 'Bike',       emoji: '🚲', category: 'vehicle' },
-  { id: 'airplane',   label: 'Airplane',   emoji: '✈️', category: 'vehicle' },
-  { id: 'boat',       label: 'Boat',       emoji: '⛵', category: 'vehicle' },
-  { id: 'helicopter', label: 'Helicopter', emoji: '🚁', category: 'vehicle' },
-  { id: 'tractor',    label: 'Tractor',    emoji: '🚜', category: 'vehicle' },
-  { id: 'scooter',    label: 'Scooter',    emoji: '🛵', category: 'vehicle' },
+  { id: 'car',        i18nKey: 'item_car',        emoji: '🚗', category: 'cat_vehicle' },
+  { id: 'bus',        i18nKey: 'item_bus',        emoji: '🚌', category: 'cat_vehicle' },
+  { id: 'train',      i18nKey: 'item_train',      emoji: '🚂', category: 'cat_vehicle' },
+  { id: 'bike',       i18nKey: 'item_bike',       emoji: '🚲', category: 'cat_vehicle' },
+  { id: 'airplane',   i18nKey: 'item_airplane',   emoji: '✈️', category: 'cat_vehicle' },
+  { id: 'boat',       i18nKey: 'item_boat',       emoji: '⛵', category: 'cat_vehicle' },
+  { id: 'helicopter', i18nKey: 'item_helicopter', emoji: '🚁', category: 'cat_vehicle' },
+  { id: 'tractor',    i18nKey: 'item_tractor',    emoji: '🚜', category: 'cat_vehicle' },
+  { id: 'scooter',    i18nKey: 'item_scooter',    emoji: '🛵', category: 'cat_vehicle' },
 ];
 
 const ANIMALS = [
-  { id: 'dog',        label: 'Dog',        emoji: '🐶', category: 'animal' },
-  { id: 'cat',        label: 'Cat',        emoji: '🐱', category: 'animal' },
-  { id: 'elephant',   label: 'Elephant',   emoji: '🐘', category: 'animal' },
-  { id: 'fish',       label: 'Fish',       emoji: '🐟', category: 'animal' },
-  { id: 'bird',       label: 'Bird',       emoji: '🐦', category: 'animal' },
-  { id: 'monkey',     label: 'Monkey',     emoji: '🐒', category: 'animal' },
-  { id: 'lion',       label: 'Lion',       emoji: '🦁', category: 'animal' },
-  { id: 'tiger',      label: 'Tiger',      emoji: '🐅', category: 'animal' },
-  { id: 'bear',       label: 'Bear',       emoji: '🐻', category: 'animal' },
+  { id: 'dog',        i18nKey: 'item_dog',        emoji: '🐶', category: 'cat_animal' },
+  { id: 'cat',        i18nKey: 'item_cat',        emoji: '🐱', category: 'cat_animal' },
+  { id: 'elephant',   i18nKey: 'item_elephant',   emoji: '🐘', category: 'cat_animal' },
+  { id: 'fish',       i18nKey: 'item_fish',       emoji: '🐟', category: 'cat_animal' },
+  { id: 'bird',       i18nKey: 'item_bird',       emoji: '🐦', category: 'cat_animal' },
+  { id: 'monkey',     i18nKey: 'item_monkey',     emoji: '🐒', category: 'cat_animal' },
+  { id: 'lion',       i18nKey: 'item_lion',       emoji: '🦁', category: 'cat_animal' },
+  { id: 'tiger',      i18nKey: 'item_tiger',      emoji: '🐅', category: 'cat_animal' },
+  { id: 'bear',       i18nKey: 'item_bear',       emoji: '🐻', category: 'cat_animal' },
 ];
 
 export function generateOddOneOutRound(itemCount: number): OddOneOutRound {
@@ -150,123 +148,122 @@ export function generateOddOneOutRound(itemCount: number): OddOneOutRound {
   return {
     items,
     oddItemId: oddItem.id,
-    explanation: `${oddItem.label} is an ${oddCategory.text.slice(0, -1)}, the rest are ${baseCategory.text}`
+    explanationKey: `${oddItem.i18nKey}|${oddCategory.text}|${baseCategory.text}` // Storing format to compute in UI
   };
 }
 
 export const ODD_ONE_OUT_ROUNDS: OddOneOutRound[] = [
   {
     items: [
-      { id: 'banana', label: 'Banana', emoji: '🍌', category: 'fruit' },
-      { id: 'car',    label: 'Car',    emoji: '🚗', category: 'vehicle' },
-      { id: 'orange', label: 'Orange', emoji: '🍊', category: 'fruit' },
-      { id: 'apple',  label: 'Apple',  emoji: '🍎', category: 'fruit' },
+      { id: 'banana', i18nKey: 'item_banana', emoji: '🍌', category: 'cat_fruit' },
+      { id: 'car',    i18nKey: 'item_car',    emoji: '🚗', category: 'cat_vehicle' },
+      { id: 'orange', i18nKey: 'item_orange', emoji: '🍊', category: 'cat_fruit' },
+      { id: 'apple',  i18nKey: 'item_apple',  emoji: '🍎', category: 'cat_fruit' },
     ],
     oddItemId: 'car',
-    explanation: 'Car is a vehicle, the rest are fruits',
+    explanationKey: 'item_car|cat_vehicle|cat_fruits',
   },
   {
     items: [
-      { id: 'dog',  label: 'Dog',  emoji: '🐶', category: 'animal' },
-      { id: 'cat',  label: 'Cat',  emoji: '🐱', category: 'animal' },
-      { id: 'bus',  label: 'Bus',  emoji: '🚌', category: 'vehicle' },
-      { id: 'fish', label: 'Fish', emoji: '🐟', category: 'animal' },
+      { id: 'dog',  i18nKey: 'item_dog',  emoji: '🐶', category: 'cat_animal' },
+      { id: 'cat',  i18nKey: 'item_cat',  emoji: '🐱', category: 'cat_animal' },
+      { id: 'bus',  i18nKey: 'item_bus',  emoji: '🚌', category: 'cat_vehicle' },
+      { id: 'fish', i18nKey: 'item_fish', emoji: '🐟', category: 'cat_animal' },
     ],
     oddItemId: 'bus',
-    explanation: 'Bus is a vehicle, the rest are animals',
+    explanationKey: 'item_bus|cat_vehicle|cat_animals',
   },
   {
     items: [
-      { id: 'mango',  label: 'Mango',  emoji: '🥭', category: 'fruit' },
-      { id: 'grapes', label: 'Grapes', emoji: '🍇', category: 'fruit' },
-      { id: 'train',  label: 'Train',  emoji: '🚂', category: 'vehicle' },
-      { id: 'apple',  label: 'Apple',  emoji: '🍎', category: 'fruit' },
+      { id: 'mango',  i18nKey: 'item_mango',  emoji: '🥭', category: 'cat_fruit' },
+      { id: 'grapes', i18nKey: 'item_grapes', emoji: '🍇', category: 'cat_fruit' },
+      { id: 'train',  i18nKey: 'item_train',  emoji: '🚂', category: 'cat_vehicle' },
+      { id: 'apple',  i18nKey: 'item_apple',  emoji: '🍎', category: 'cat_fruit' },
     ],
     oddItemId: 'train',
-    explanation: 'Train is a vehicle, the rest are fruits',
+    explanationKey: 'item_train|cat_vehicle|cat_fruits',
   },
   {
     items: [
-      { id: 'car',      label: 'Car',      emoji: '🚗', category: 'vehicle' },
-      { id: 'elephant', label: 'Elephant', emoji: '🐘', category: 'animal' },
-      { id: 'bike',     label: 'Bike',     emoji: '🚲', category: 'vehicle' },
-      { id: 'bus',      label: 'Bus',      emoji: '🚌', category: 'vehicle' },
+      { id: 'car',      i18nKey: 'item_car',      emoji: '🚗', category: 'cat_vehicle' },
+      { id: 'elephant', i18nKey: 'item_elephant', emoji: '🐘', category: 'cat_animal' },
+      { id: 'bike',     i18nKey: 'item_bike',     emoji: '🚲', category: 'cat_vehicle' },
+      { id: 'bus',      i18nKey: 'item_bus',      emoji: '🚌', category: 'cat_vehicle' },
     ],
     oddItemId: 'elephant',
-    explanation: 'Elephant is an animal, the rest are vehicles',
+    explanationKey: 'item_elephant|cat_animal|cat_vehicles',
   },
   {
     items: [
-      { id: 'cat',    label: 'Cat',    emoji: '🐱', category: 'animal' },
-      { id: 'dog',    label: 'Dog',    emoji: '🐶', category: 'animal' },
-      { id: 'orange', label: 'Orange', emoji: '🍊', category: 'fruit' },
-      { id: 'fish',   label: 'Fish',   emoji: '🐟', category: 'animal' },
+      { id: 'cat',    i18nKey: 'item_cat',    emoji: '🐱', category: 'cat_animal' },
+      { id: 'dog',    i18nKey: 'item_dog',    emoji: '🐶', category: 'cat_animal' },
+      { id: 'orange', i18nKey: 'item_orange', emoji: '🍊', category: 'cat_fruit' },
+      { id: 'fish',   i18nKey: 'item_fish',   emoji: '🐟', category: 'cat_animal' },
     ],
     oddItemId: 'orange',
-    explanation: 'Orange is a fruit, the rest are animals',
+    explanationKey: 'item_orange|cat_fruit|cat_animals',
   },
   {
     items: [
-      { id: 'banana', label: 'Banana', emoji: '🍌', category: 'fruit' },
-      { id: 'mango',  label: 'Mango',  emoji: '🥭', category: 'fruit' },
-      { id: 'dog',    label: 'Dog',    emoji: '🐶', category: 'animal' },
-      { id: 'grapes', label: 'Grapes', emoji: '🍇', category: 'fruit' },
+      { id: 'banana', i18nKey: 'item_banana', emoji: '🍌', category: 'cat_fruit' },
+      { id: 'mango',  i18nKey: 'item_mango',  emoji: '🥭', category: 'cat_fruit' },
+      { id: 'dog',    i18nKey: 'item_dog',    emoji: '🐶', category: 'cat_animal' },
+      { id: 'grapes', i18nKey: 'item_grapes', emoji: '🍇', category: 'cat_fruit' },
     ],
     oddItemId: 'dog',
-    explanation: 'Dog is an animal, the rest are fruits',
+    explanationKey: 'item_dog|cat_animal|cat_fruits',
   },
 ];
 
 // ─── Mera Din (Daily Routine Recall — Sequence Ordering) ─────────────────────
 export interface RoutineItem {
   id: string;
-  label: string;
-  hindiLabel: string;
+  i18nKey: string;
   emoji: string;
   order: number;  // correct position in sequence
 }
 
 export interface RoutineRound {
-  title: string;
-  instruction: string;
+  titleKey: string;
+  instructionKey: string;
   items: RoutineItem[];
 }
 
 export const ROUTINE_ROUNDS: RoutineRound[] = [
   {
-    title: 'Put the Morning in Order',
-    instruction: 'Tap the pictures in the order you do them each morning. Start with what comes first.',
+    titleKey: 'routine_morn_title',
+    instructionKey: 'routine_morn_inst',
     items: [
-      { id: 'wakeup',    label: 'Wake up',    hindiLabel: 'उठना',          emoji: '☀️',  order: 1 },
-      { id: 'washface',  label: 'Wash face',  hindiLabel: 'मुँह धोना',      emoji: '💧',  order: 2 },
-      { id: 'dressed',   label: 'Get dressed', hindiLabel: 'कपड़े पहनना',   emoji: '👕',  order: 3 },
-      { id: 'tea',       label: 'Have tea',   hindiLabel: 'चाय पीना',       emoji: '☕',  order: 4 },
-      { id: 'readpaper', label: 'Read Paper', hindiLabel: 'अखबार पढ़ना',   emoji: '📰',  order: 5 },
-      { id: 'breakfast', label: 'Breakfast',  hindiLabel: 'नाश्ता करना',    emoji: '🍳',  order: 6 },
+      { id: 'wakeup',    i18nKey: 'item_wakeup',    emoji: '☀️',  order: 1 },
+      { id: 'washface',  i18nKey: 'item_washface',  emoji: '💧',  order: 2 },
+      { id: 'dressed',   i18nKey: 'item_dressed',   emoji: '👕',  order: 3 },
+      { id: 'tea',       i18nKey: 'item_tea',       emoji: '☕',  order: 4 },
+      { id: 'readpaper', i18nKey: 'item_readpaper', emoji: '📰',  order: 5 },
+      { id: 'breakfast', i18nKey: 'item_breakfast', emoji: '🍳',  order: 6 },
     ],
   },
   {
-    title: 'Put the Evening in Order',
-    instruction: 'Tap the pictures in the right order for your evening routine.',
+    titleKey: 'routine_eve_title',
+    instructionKey: 'routine_eve_inst',
     items: [
-      { id: 'eveningwalk', label: 'Evening walk', hindiLabel: 'शाम की सैर',  emoji: '🚶', order: 1 },
-      { id: 'freshen',     label: 'Freshen up',   hindiLabel: 'ताज़ा होना',   emoji: '🚿', order: 2 },
-      { id: 'tv',          label: 'Watch TV',     hindiLabel: 'टीवी देखना',     emoji: '📺', order: 3 },
-      { id: 'dinner',      label: 'Have dinner',  hindiLabel: 'रात का खाना',  emoji: '🍽️', order: 4 },
-      { id: 'medicine',    label: 'Take medicine', hindiLabel: 'दवाई लेना',   emoji: '💊', order: 5 },
-      { id: 'sleep',       label: 'Go to sleep',  hindiLabel: 'सो जाना',       emoji: '🛌', order: 6 },
+      { id: 'eveningwalk', i18nKey: 'item_eveningwalk', emoji: '🚶', order: 1 },
+      { id: 'freshen',     i18nKey: 'item_freshen',     emoji: '🚿', order: 2 },
+      { id: 'tv',          i18nKey: 'item_tv',          emoji: '📺', order: 3 },
+      { id: 'dinner',      i18nKey: 'item_dinner',      emoji: '🍽️', order: 4 },
+      { id: 'medicine',    i18nKey: 'item_medicine',    emoji: '💊', order: 5 },
+      { id: 'sleep',       i18nKey: 'item_sleep',       emoji: '🛌', order: 6 },
     ],
   },
   {
-    title: 'Put the Meal Routine in Order',
-    instruction: 'What do you do before and after eating? Tap in the right order.',
+    titleKey: 'routine_meal_title',
+    instructionKey: 'routine_meal_inst',
     items: [
-      { id: 'washands',  label: 'Wash hands',  hindiLabel: 'हाथ धोना',       emoji: '🙌', order: 1 },
-      { id: 'sit',       label: 'Sit down',    hindiLabel: 'बैठना',            emoji: '🪑', order: 2 },
-      { id: 'serve',     label: 'Serve food',  hindiLabel: 'खाना परोसना',    emoji: '🍲', order: 3 },
-      { id: 'eat',       label: 'Eat food',    hindiLabel: 'खाना खाना',       emoji: '🍛', order: 4 },
-      { id: 'rinse',     label: 'Rinse plate', hindiLabel: 'थाली साफ करना',   emoji: '🧹', order: 5 },
-      { id: 'rest',      label: 'Rest',        hindiLabel: 'आराम करना',       emoji: '🛋️', order: 6 },
+      { id: 'washands',  i18nKey: 'item_washands',  emoji: '🙌', order: 1 },
+      { id: 'sit',       i18nKey: 'item_sit',       emoji: '🪑', order: 2 },
+      { id: 'serve',     i18nKey: 'item_serve',     emoji: '🍲', order: 3 },
+      { id: 'eat',       i18nKey: 'item_eat',       emoji: '🍛', order: 4 },
+      { id: 'rinse',     i18nKey: 'item_rinse',     emoji: '🧹', order: 5 },
+      { id: 'rest',      i18nKey: 'item_rest',      emoji: '🛋️', order: 6 },
     ],
   },
 ];

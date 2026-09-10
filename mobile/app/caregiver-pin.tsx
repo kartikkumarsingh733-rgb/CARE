@@ -23,7 +23,7 @@ export default function CaregiverPinScreen() {
     }
     if (d === '✓') {
       if (pin === CAREGIVER_PIN) {
-        router.push('/(caregiver)');
+        router.replace('/(caregiver)');
       } else {
         setError(true);
         setPin('');
@@ -39,7 +39,7 @@ export default function CaregiverPinScreen() {
   // Auto-submit when 4 digits entered
   if (pin.length === 4 && !error) {
     if (pin === CAREGIVER_PIN) {
-      router.push('/(caregiver)');
+      router.replace('/(caregiver)');
     } else {
       setError(true);
       setPin('');
@@ -64,7 +64,7 @@ export default function CaregiverPinScreen() {
               key={i}
               style={[
                 styles.dot,
-                i < pin.length && { backgroundColor: error ? Colors.alertRed : Colors.caregiverNavy },
+                i < pin.length && { backgroundColor: error ? Colors.alertRed : Colors.caregiverPrimary },
               ]}
             />
           ))}
@@ -81,7 +81,7 @@ export default function CaregiverPinScreen() {
               key={d}
               style={[
                 styles.key,
-                d === '✓' && { backgroundColor: Colors.caregiverNavy },
+                d === '✓' && { backgroundColor: Colors.caregiverPrimary },
               ]}
               onPress={() => handleDigit(d)}
               activeOpacity={0.7}
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: Typography.fontFamily.display,
     fontSize: Typography.size.xxl,
-    color: Colors.caregiverNavy,
+    color: Colors.caregiverPrimary,
   },
   subtitle: {
     fontFamily: Typography.fontFamily.regular,
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: Colors.borderMedium,
     borderWidth: 2,
-    borderColor: Colors.caregiverNavy,
+    borderColor: Colors.caregiverPrimary,
   },
   errorText: {
     fontFamily: Typography.fontFamily.semiBold,

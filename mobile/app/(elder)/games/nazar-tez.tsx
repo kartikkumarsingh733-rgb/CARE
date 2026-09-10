@@ -31,12 +31,15 @@ import { getDifficultyForDomain, evaluateAndUpdateTier } from '@/engine/difficul
 import { insertGameSession } from '@/engine/database';
 import { useAppStore } from '@/store/appStore';
 import { generateSearchRound, type AttentionItem } from '@/engine/gameContent';
+import i18n from '@/services/i18n';
 import GameResultModal from '@/components/GameResultModal';
 
 const ROUNDS_PER_GAME = 5;
 
 export default function NazarTezGame() {
   const router = useRouter();
+  const language = useAppStore(state => state.patient.preferredLanguage);
+  i18n.locale = language || 'en';
   const domain = 'attention';
   const domainData = Domains[domain];
   const currentTier = useAppStore(state => state.domainTiers[domain]);
@@ -101,7 +104,7 @@ export default function NazarTezGame() {
 
     const updatedSession = logItem(session, {
       itemId: generateItemId(),
-      prompt: `Find: ${currentRound.target.label}`,
+      prompt: `Find: ${i18n.t(currentRound.target.i18nKey)}`,
       correctAnswer: currentRound.target.id,
       userAnswer: item?.id || null,
       isCorrect: isTimeout ? false : isCorrect,
@@ -147,10 +150,9 @@ export default function NazarTezGame() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: domainData.color }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← {i18n.t('back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.gameName}>Nazar Tez</Text>
-        <Text style={styles.gameHindi}>नज़र तेज़</Text>
+        <Text style={styles.gameName}>{i18n.t(domainData.i18nKey)}</Text>
         <Text style={styles.progressText}>
           {roundIndex + 1} / {ROUNDS_PER_GAME}
         </Text>
@@ -169,10 +171,9 @@ export default function NazarTezGame() {
       <View style={styles.content}>
         {/* Target prompt */}
         <View style={[styles.targetBox, { borderColor: domainData.color }]}>
-          <Text style={styles.targetLabel}>Find this:</Text>
+          <Text style={styles.targetLabel}>{i18n.t('attention_find')}</Text>
           <Text style={styles.targetEmoji}>{currentRound.target.emoji}</Text>
-          <Text style={styles.targetName}>{currentRound.target.label}</Text>
-          <Text style={styles.targetHindi}>{currentRound.target.hindiLabel}</Text>
+          <Text style={styles.targetName}>{i18n.t(currentRound.target.i18nKey)}</Text>
         </View>
 
         {/* Feedback */}
@@ -193,10 +194,10 @@ export default function NazarTezGame() {
               ]}
             >
               {feedback === 'correct'
-                ? '✓  Bilkul sahi! शाबाश!'
+                ? `✓ ${i18n.t('correct')}`
                 : feedback === 'timeout'
-                ? '⏳ Time is up! समय समाप्त!'
-                : `The ${currentRound.target.emoji} ${currentRound.target.label} was there!`}
+                ? `⏳ ${i18n.t('timeout')}`
+                : `${i18n.t('wrong_answer')} ${currentRound.target.emoji} ${i18n.t(currentRound.target.i18nKey)}`}
             </Text>
           </View>
         )}
@@ -239,7 +240,7 @@ export default function NazarTezGame() {
         correct={correctCount}
         total={ROUNDS_PER_GAME}
         domainColor={domainData.color}
-        domainName="Nazar Tez"
+        domainName={i18n.t(domainData.i18nKey)}
         onPlayAgain={resetGame}
         onBack={() => router.push('/(elder)/play')}
       />
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
   timerBarContainer: {
     height: 6,
     backgroundColor: Colors.borderLight,
-    borderRadius: Radius.full,
+    borderRadius: Radius.pill,
     marginBottom: Spacing.md,
     overflow: 'hidden',
   },

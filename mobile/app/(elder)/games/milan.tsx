@@ -30,10 +30,13 @@ import { getDifficultyForDomain, evaluateAndUpdateTier } from '@/engine/difficul
 import { insertGameSession } from '@/engine/database';
 import { useAppStore } from '@/store/appStore';
 import { generateOddOneOutRound, type OddOneOutRound } from '@/engine/gameContent';
+import i18n from '@/services/i18n';
 import GameResultModal from '@/components/GameResultModal';
 
 export default function MilanGame() {
   const router = useRouter();
+  const language = useAppStore(state => state.patient.preferredLanguage);
+  i18n.locale = language || 'en';
   const domain = 'patterns';
   const domainData = Domains[domain];
   const currentTier = useAppStore(state => state.domainTiers[domain]);
@@ -173,10 +176,9 @@ export default function MilanGame() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: domainData.color }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← {i18n.t('back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.gameName}>Milan</Text>
-        <Text style={styles.gameHindi}>मिलान</Text>
+        <Text style={styles.gameName}>{i18n.t(domainData.i18nKey)}</Text>
         <Text style={styles.progressText}>
           {roundIndex + 1} / {totalRounds}
         </Text>
@@ -196,10 +198,7 @@ export default function MilanGame() {
         {/* Question prompt */}
         <View style={styles.questionBox}>
           <Text style={styles.questionText}>
-            Which one does NOT belong?
-          </Text>
-          <Text style={styles.questionHindi}>
-            कौन सी तस्वीर इन सब में अलग है?
+            {i18n.t('patterns_question')}
           </Text>
         </View>
 
@@ -220,11 +219,17 @@ export default function MilanGame() {
                 { color: feedback === 'correct' ? Colors.successTeal : Colors.alertYellow },
               ]}
             >
-              {feedback === 'correct'
-                ? '✓  Bilkul sahi! Great thinking!'
-                : feedback === 'timeout'
-                  ? `⏰  Time's up! ${currentRound.explanation}`
-                  : `💡  ${currentRound.explanation}`}
+              {(() => {
+                const [itemKey, cat1Key, cat2Key] = currentRound.explanationKey.split('|');
+                const explanation = i18n.t('patterns_explanation')
+                  .replace('{item}', i18n.t(itemKey))
+                  .replace('{cat1}', i18n.t(cat1Key))
+                  .replace('{cat2}', i18n.t(cat2Key));
+
+                if (feedback === 'correct') return `✓ ${i18n.t('correct')}`;
+                if (feedback === 'timeout') return `⏰ ${i18n.t('timeout')} ${explanation}`;
+                return `💡 ${explanation}`;
+              })()}
             </Text>
           </View>
         )}
@@ -252,7 +257,7 @@ export default function MilanGame() {
               disabled={!!selected}
             >
               <Text style={styles.itemEmoji}>{item.emoji}</Text>
-              <Text style={styles.itemLabel}>{item.label}</Text>
+              <Text style={styles.itemLabel}>{i18n.t(item.i18nKey)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -263,7 +268,7 @@ export default function MilanGame() {
         correct={correctCount}
         total={totalRounds}
         domainColor={domainData.color}
-        domainName="Milan"
+        domainName={i18n.t(domainData.i18nKey)}
         onPlayAgain={resetGame}
         onBack={() => router.push('/(elder)/play')}
       />

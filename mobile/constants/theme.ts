@@ -61,6 +61,8 @@ export const Colors = {
   caregiverBg: '#FFFFFF',
   caregiverBorder: '#E0E0E0',
   caregiverCardBg: '#FFFFFF',
+  caregiverNavy: '#1E3D52',
+  caregiverNavyLight: '#3B6B8A',
 
   // ─── Chat / Companion ─────────────────────────────────────────────────────
   chatGreen: '#2D5A3D',
@@ -159,32 +161,28 @@ export const MIN_TAP_TARGET = 48;
 export const Domains = {
   memory: {
     key: 'memory',
-    label: 'Memory',
-    hindiLabel: 'याद रखो',
+    i18nKey: 'domain_memory',
     color: Colors.domainMemory,
     shadow: Colors.domainMemoryShadow,
     icon: '🧠',
   },
   attention: {
     key: 'attention',
-    label: 'Attention',
-    hindiLabel: 'नज़र तेज़',
+    i18nKey: 'domain_attention',
     color: Colors.domainAttention,
     shadow: Colors.domainAttentionShadow,
     icon: '👁️',
   },
   patterns: {
     key: 'patterns',
-    label: 'Patterns',
-    hindiLabel: 'मिलान',
+    i18nKey: 'domain_patterns',
     color: Colors.domainPatterns,
     shadow: Colors.domainPatternsShadow,
     icon: '🔍',
   },
   recall: {
     key: 'recall',
-    label: 'Daily Recall',
-    hindiLabel: 'मेरा दिन',
+    i18nKey: 'domain_recall',
     color: Colors.domainRecall,
     shadow: Colors.domainRecallShadow,
     icon: '🌅',

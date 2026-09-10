@@ -5,9 +5,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Shadow, Typography, Spacing } from '../constants/theme';
 import { voiceCommandService } from '../services/VoiceCommandService';
 import { audioService } from '../services/AudioService';
+import { useAppStore } from '../store/appStore';
+import i18n from '../services/i18n';
 
 export default function FloatingChatButton({ bottomOffset = 24 }: { bottomOffset?: number }) {
   const router = useRouter();
+  const language = useAppStore(state => state.patient.preferredLanguage);
+  i18n.locale = language || 'en';
   const [isRecording, setIsRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
 
@@ -57,7 +61,7 @@ export default function FloatingChatButton({ bottomOffset = 24 }: { bottomOffset
              <MaterialIcons name="chat" size={28} color="#FFF" />
           )
         )}
-        {isRecording && <Text style={styles.listenText} importantForAccessibility="no">Speak now...</Text>}
+        {isRecording && <Text style={styles.listenText} importantForAccessibility="no">{i18n.t('chat_speak_now', { defaultValue: 'Speak now...' })}</Text>}
       </TouchableOpacity>
     </View>
   );

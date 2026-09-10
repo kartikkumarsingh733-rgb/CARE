@@ -32,10 +32,13 @@ import { getDifficultyForDomain, evaluateAndUpdateTier } from '@/engine/difficul
 import { insertGameSession } from '@/engine/database';
 import { useAppStore } from '@/store/appStore';
 import { generateRoutineRound, type RoutineItem, type RoutineRound } from '@/engine/gameContent';
+import i18n from '@/services/i18n';
 import GameResultModal from '@/components/GameResultModal';
 
 export default function MeraDinGame() {
   const router = useRouter();
+  const language = useAppStore(state => state.patient.preferredLanguage);
+  i18n.locale = language || 'en';
   const domain = 'recall';
   const domainData = Domains[domain];
   const currentTier = useAppStore(state => state.domainTiers[domain]);
@@ -104,7 +107,7 @@ export default function MeraDinGame() {
 
     const updatedSession = logItem(session, {
       itemId: generateItemId(),
-      prompt: currentRound.instruction,
+      prompt: i18n.t(currentRound.instructionKey),
       correctAnswer: currentRound.items.map((r) => r.id).join(','),
       userAnswer: 'timeout',
       isCorrect: false,
@@ -142,7 +145,7 @@ export default function MeraDinGame() {
 
     const updatedSession = logItem(session, {
       itemId: generateItemId(),
-      prompt: currentRound.instruction,
+      prompt: i18n.t(currentRound.instructionKey),
       correctAnswer: currentRound.items.map((r) => r.id).join(','),
       userAnswer: sequence.map((r) => r.id).join(','),
       isCorrect: correct,
@@ -186,10 +189,9 @@ export default function MeraDinGame() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: domainData.color }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← {i18n.t('back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.gameName}>Mera Din</Text>
-        <Text style={styles.gameHindi}>मेरा दिन</Text>
+        <Text style={styles.gameName}>{i18n.t(domainData.i18nKey)}</Text>
         <Text style={styles.progressText}>
           {roundIndex + 1} / {totalRounds}
         </Text>
@@ -208,8 +210,8 @@ export default function MeraDinGame() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Instruction */}
         <View style={styles.instructionBox}>
-          <Text style={styles.roundTitle}>{currentRound.title}</Text>
-          <Text style={styles.instructionText}>{currentRound.instruction}</Text>
+          <Text style={styles.roundTitle}>{i18n.t(currentRound.titleKey)}</Text>
+          <Text style={styles.instructionText}>{i18n.t(currentRound.instructionKey)}</Text>
         </View>
 
         {/* Countdown Timer */}
@@ -242,14 +244,14 @@ export default function MeraDinGame() {
               ]}
             >
               {isCorrect
-                ? '✓  Sahi order! Bahut badhiya! शाबाश!'
+                ? `✓ ${i18n.t('correct')}`
                 : isTimeout
-                  ? `⏰ Time's up! The correct order is: ${currentRound.items
+                  ? `⏰ ${i18n.t('timeout')} ${i18n.t('correct_order')} ${currentRound.items
                       .slice()
                       .sort((a, b) => a.order - b.order)
                       .map((r) => r.emoji)
                       .join(' → ')}`
-                  : `💡  The correct order is: ${currentRound.items
+                  : `💡 ${i18n.t('correct_order')} ${currentRound.items
                       .slice()
                       .sort((a, b) => a.order - b.order)
                       .map((r) => r.emoji)
@@ -259,7 +261,7 @@ export default function MeraDinGame() {
         )}
 
         {/* Sequence builder — user's chosen order */}
-        <Text style={styles.sectionLabel}>YOUR ORDER (Tap to remove)</Text>
+        <Text style={styles.sectionLabel}>{i18n.t('your_order')}</Text>
         <View style={styles.sequenceRow}>
           {sequence.map((item, index) => (
             <TouchableOpacity
@@ -277,7 +279,7 @@ export default function MeraDinGame() {
             >
               <Text style={styles.seqNumber}>{index + 1}</Text>
               <Text style={styles.seqEmoji}>{item.emoji}</Text>
-              <Text style={styles.seqLabel}>{item.label}</Text>
+              <Text style={styles.seqLabel}>{i18n.t(item.i18nKey)}</Text>
             </TouchableOpacity>
           ))}
 
@@ -292,7 +294,7 @@ export default function MeraDinGame() {
         </View>
 
         {/* Available items */}
-        <Text style={styles.sectionLabel}>AVAILABLE (Tap to add)</Text>
+        <Text style={styles.sectionLabel}>{i18n.t('available_order')}</Text>
         <View style={styles.itemsRow}>
           {remaining.map((item) => (
             <TouchableOpacity
@@ -302,8 +304,7 @@ export default function MeraDinGame() {
               disabled={checked}
             >
               <Text style={styles.sourceTileEmoji}>{item.emoji}</Text>
-              <Text style={styles.sourceTileLabel}>{item.label}</Text>
-              <Text style={styles.sourceTileHindi}>{item.hindiLabel}</Text>
+              <Text style={styles.sourceTileLabel}>{i18n.t(item.i18nKey)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -314,7 +315,7 @@ export default function MeraDinGame() {
             style={[styles.checkBtn, { backgroundColor: domainData.color }]}
             onPress={checkAnswer}
           >
-            <Text style={styles.checkBtnText}>✓  Check My Answer</Text>
+            <Text style={styles.checkBtnText}>✓  {i18n.t('check_answer')}</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -324,7 +325,7 @@ export default function MeraDinGame() {
         correct={correctCount}
         total={totalRounds}
         domainColor={domainData.color}
-        domainName="Mera Din"
+        domainName={i18n.t(domainData.i18nKey)}
         onPlayAgain={resetGame}
         onBack={() => router.push('/(elder)/play')}
       />

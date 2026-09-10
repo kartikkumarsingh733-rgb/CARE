@@ -6,7 +6,7 @@ import { sarvamService } from './SarvamService';
 
 let Audio: any = null;
 try {
-  Audio = require('expo-av').Audio;
+  // Audio = require('expo-av').Audio;
 } catch (e) {
   console.warn("expo-av native module not found. Audio recording will be mocked.");
 }

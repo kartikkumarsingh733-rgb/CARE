@@ -33,6 +33,15 @@ export function initDatabase() {
       reason TEXT NOT NULL,
       createdAt INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS SyncQueue (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entityType TEXT NOT NULL,
+      entityId TEXT NOT NULL,
+      operation TEXT NOT NULL,
+      payload TEXT NOT NULL,
+      timestamp INTEGER NOT NULL
+    );
   `);
 }
 
@@ -70,6 +79,12 @@ export function insertGameSession(session: GameSession) {
       session.timeOfDay,
       Date.now()
     ]
+  );
+
+  // Queue for sync
+  db.runSync(
+    `INSERT INTO SyncQueue (entityType, entityId, operation, payload, timestamp) VALUES (?, ?, ?, ?, ?)`,
+    ['GameSession', session.sessionId, 'INSERT', JSON.stringify(session), Date.now()]
   );
 }
 
@@ -134,6 +149,67 @@ export function insertDifficultyLog(
     `INSERT INTO DifficultyLogs (patientId, domain, oldTier, newTier, reason, createdAt) 
      VALUES (?, ?, ?, ?, ?, ?)`,
     [patientId, domain, oldTier, newTier, reason, Date.now()]
+  );
+
+  // Queue for sync
+  db.runSync(
+    `INSERT INTO SyncQueue (entityType, entityId, operation, payload, timestamp) VALUES (?, ?, ?, ?, ?)`,
+    ['DifficultyLog', `${patientId}_${domain}_${Date.now()}`, 'INSERT', JSON.stringify({ patientId, domain, oldTier, newTier, reason }), Date.now()]
+  );
+}
+
+export interface SyncQueueItem {
+  id: number;
+  entityType: string;
+  entityId: string;
+  operation: string;
+  payload: string;
+  timestamp: number;
+}
+
+export function getPendingSyncItems(): SyncQueueItem[] {
+  return db.getAllSync(`SELECT * FROM SyncQueue ORDER BY timestamp ASC`) as SyncQueueItem[];
+}
+
+export function removeSyncItem(id: number) {
+  db.runSync(`DELETE FROM SyncQueue WHERE id = ?`, [id]);
+}
+
+/**
+ * Inserts or replaces a GameSession pulled from the remote backend.
+ * Avoids adding to the SyncQueue to prevent a sync loop.
+ */
+export function upsertGameSession(session: GameSession) {
+  const itemsCount = session.items.length;
+  const correctCount = session.items.filter(i => i.isCorrect).length;
+  const timed = session.items.filter(i => i.responseTimeMs !== null);
+  const avgResponseMs = timed.length > 0 
+    ? timed.reduce((sum, i) => sum + (i.responseTimeMs ?? 0), 0) / timed.length
+    : 0;
+
+  db.runSync(
+    `INSERT OR REPLACE INTO GameSessions (
+      id, patientId, gameType, domain, startTime, endTime, 
+      itemsCount, correctCount, avgResponseMs, 
+      difficultyTierBefore, difficultyTierAfter, 
+      abandoned, timeOfDay, createdAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      session.sessionId,
+      session.patientId,
+      session.gameType,
+      session.domain,
+      session.startTime,
+      session.endTime ?? null,
+      itemsCount,
+      correctCount,
+      avgResponseMs,
+      session.difficultyTierBefore,
+      session.difficultyTierAfter ?? null,
+      session.abandoned ? 1 : 0,
+      session.timeOfDay,
+      Date.now() // Local creation time
+    ]
   );
 }
 

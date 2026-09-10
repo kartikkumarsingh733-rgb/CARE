@@ -13,74 +13,114 @@ import FloatingChatButton from '@/components/FloatingChatButton';
 import { useAppStore, Reminder } from '@/store/appStore';
 import { NotificationService } from '@/services/NotificationService';
 import { MaterialIcons } from '@expo/vector-icons';
+import i18n from '@/services/i18n';
+import { TouchableWithoutFeedback, Alert } from 'react-native';
 
 const TASK_CATEGORIES = [
-  { label: 'Medicine',       icon: 'medication', color: '#C4822A' },
-  { label: 'Meal',           icon: 'restaurant', color: '#366184' },
-  { label: 'Drink Water',    icon: 'local-drink', color: '#366184' },
-  { label: 'Walk',           icon: 'directions-walk', color: '#366184' },
-  { label: 'Doctor Visit',   icon: 'local-hospital', color: '#C4822A' },
-  { label: 'Temple / Prayer', icon: 'temple-hindu', color: '#C4822A' },
-  { label: 'Call Family',    icon: 'phone', color: '#586C32' },
-  { label: 'Rest / Nap',     icon: 'bed', color: '#586C32' },
+  { i18nKey: 'cat_medicine',       icon: 'medication', color: '#C4822A' },
+  { i18nKey: 'cat_meal',           icon: 'restaurant', color: '#366184' },
+  { i18nKey: 'cat_water',          icon: 'local-drink', color: '#366184' },
+  { i18nKey: 'cat_walk',           icon: 'directions-walk', color: '#366184' },
+  { i18nKey: 'cat_doctor',         icon: 'local-hospital', color: '#C4822A' },
+  { i18nKey: 'cat_temple',         icon: 'temple-hindu', color: '#C4822A' },
+  { i18nKey: 'cat_call_family',    icon: 'phone', color: '#586C32' },
+  { i18nKey: 'cat_rest',           icon: 'bed', color: '#586C32' },
 ];
 
 const TIME_SLOTS = [
-  { label: 'Morning',   time: '8:00 AM'  },
-  { label: 'Midday',    time: '12:00 PM' },
-  { label: 'Afternoon', time: '3:00 PM'  },
-  { label: 'Evening',   time: '6:00 PM'  },
-  { label: 'Night',     time: '9:00 PM'  },
-  { label: 'Test Now',  time: 'In 10 sec' },
+  { i18nKey: 'slot_morning',   time: '8:00 AM'  },
+  { i18nKey: 'slot_midday',    time: '12:00 PM' },
+  { i18nKey: 'slot_afternoon', time: '3:00 PM'  },
+  { i18nKey: 'slot_evening',   time: '6:00 PM'  },
+  { i18nKey: 'slot_night',     time: '9:00 PM'  },
+  { i18nKey: 'slot_test',      time: 'In 10 sec' },
 ];
 
 export default function MyDayScreen() {
-  const { reminders, toggleReminderDone, addReminder } = useAppStore();
+  const { reminders, toggleReminderDone, addReminder, removeReminder, updateReminder } = useAppStore();
   const [showAddTask, setShowAddTask] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<typeof TASK_CATEGORIES[0] | null>(null);
   const [selectedTime, setSelectedTime] = useState<typeof TIME_SLOTS[0] | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
+  const language = useAppStore(state => state.patient.preferredLanguage);
+  i18n.locale = language || 'en';
 
   useEffect(() => {
     NotificationService.requestPermissionsAsync();
   }, []);
 
   const handleAddReminder = async () => {
-    if (!selectedCategory || !selectedTime) return;
+    if (!selectedCategory || !selectedTime) {
+      setErrorMsg('Please select both a category and a time slot.');
+      return;
+    }
+    setErrorMsg('');
 
     let notificationId: string | undefined;
 
     try {
-      if (selectedTime.label === 'Test Now') {
+      if (selectedTime.i18nKey === 'slot_test') {
         notificationId = await NotificationService.scheduleReminderInSeconds(
-          selectedCategory.label,
-          'Time to do your task!',
+          i18n.t(selectedCategory.i18nKey),
+          i18n.t('time_task_msg'),
           10,
-          { category: selectedCategory.label }
+          { category: i18n.t(selectedCategory.i18nKey) }
         );
       } else {
         notificationId = await NotificationService.scheduleReminderInSeconds(
-          selectedCategory.label,
-          'Time for your scheduled task!',
+          i18n.t(selectedCategory.i18nKey),
+          i18n.t('time_scheduled_msg'),
           120, // 2 mins
-          { category: selectedCategory.label }
+          { category: i18n.t(selectedCategory.i18nKey) }
         );
       }
     } catch (e) {
       console.warn("Notifications may not work in Expo Go, adding task anyway");
     }
 
-    addReminder({
-      title: selectedCategory.label,
-      subtitle: `Scheduled for ${selectedTime.label}`,
-      time: selectedTime.time,
-      icon: selectedCategory.icon,
-      color: selectedCategory.color,
-      notificationId,
-    });
+    if (editingId && updateReminder) {
+      updateReminder(editingId, {
+        title: i18n.t(selectedCategory.i18nKey),
+        subtitle: i18n.t('scheduled_for', { time: i18n.t(selectedTime.i18nKey) }),
+        time: selectedTime.time,
+        icon: selectedCategory.icon,
+        color: selectedCategory.color,
+      });
+    } else {
+      addReminder({
+        title: i18n.t(selectedCategory.i18nKey),
+        subtitle: i18n.t('scheduled_for', { time: i18n.t(selectedTime.i18nKey) }),
+        time: selectedTime.time,
+        icon: selectedCategory.icon,
+        color: selectedCategory.color,
+        notificationId,
+      });
+    }
 
     setShowAddTask(false);
     setSelectedCategory(null);
     setSelectedTime(null);
+    setEditingId(null);
+    setErrorMsg('');
+  };
+
+  const handleCloseModal = () => {
+    setShowAddTask(false);
+    setSelectedCategory(null);
+    setSelectedTime(null);
+    setEditingId(null);
+    setErrorMsg('');
+  };
+
+  const openEditModal = (item: Reminder) => {
+    const matchedCategory = TASK_CATEGORIES.find(c => c.icon === item.icon) || null;
+    const matchedTime = TIME_SLOTS.find(t => t.time === item.time) || null;
+    setSelectedCategory(matchedCategory);
+    setSelectedTime(matchedTime);
+    setEditingId(item.id);
+    setErrorMsg('');
+    setShowAddTask(true);
   };
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -97,7 +137,7 @@ export default function MyDayScreen() {
       {/* Header outside SafeArea to reach top, or wrapped in SafeArea with bg color */}
       <View style={styles.header}>
         <SafeAreaView edges={['top']}>
-          <Text style={styles.title}>My Day</Text>
+          <Text style={styles.title}>{i18n.t('myday_title')}</Text>
           <Text style={styles.date}>{today}</Text>
         </SafeAreaView>
       </View>
@@ -106,7 +146,7 @@ export default function MyDayScreen() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.sectionLabel}>TODAY'S SCHEDULE</Text>
+        <Text style={styles.sectionLabel}>{i18n.t('myday_today').toUpperCase()}</Text>
 
         {reminders.map((item, index) => {
           const isNext = index === nextTaskIndex;
@@ -163,84 +203,126 @@ export default function MyDayScreen() {
                   {item.subtitle}
                 </Text>
               </View>
+
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                <TouchableOpacity
+                  style={{ padding: Spacing.sm }}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    openEditModal(item);
+                  }}
+                >
+                  <MaterialIcons name="edit" size={24} color="#6A5638" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{ padding: Spacing.sm }}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    Alert.alert('Delete Task', 'Are you sure you want to delete this task?', [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Delete', style: 'destructive', onPress: () => removeReminder(item.id) }
+                    ]);
+                  }}
+                >
+                  <MaterialIcons name="delete-outline" size={24} color="#8C4031" />
+                </TouchableOpacity>
+              </View>
               
               {isNext && (
                 <View style={styles.nextBadge}>
-                  <Text style={styles.nextBadgeText}>NEXT</Text>
+                  <Text style={styles.nextBadgeText}>{i18n.t('next_badge')}</Text>
                 </View>
               )}
             </TouchableOpacity>
           );
         })}
 
+        {reminders.length === 0 && (
+          <View style={{ padding: Spacing.xl, alignItems: 'center' }}>
+            <MaterialIcons name="event-available" size={64} color={Colors.borderLight} />
+            <Text style={{ marginTop: Spacing.md, fontFamily: Typography.fontFamily.semiBold, color: Colors.textMuted, fontSize: 16 }}>No tasks for today. Enjoy your day!</Text>
+          </View>
+        )}
+
         {/* Add Task UI, retained but re-styled */}
         <TouchableOpacity
           style={styles.addTaskBtn}
           onPress={() => setShowAddTask(true)}
         >
-          <Text style={styles.addTaskText}>+ Add a Task to Today</Text>
+          <Text style={styles.addTaskText}>{i18n.t('add_task_btn')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Add Task Modal */}
       <Modal
         visible={showAddTask}
         animationType="slide"
         transparent
-        onRequestClose={() => setShowAddTask(false)}
+        onRequestClose={handleCloseModal}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <Text style={styles.modalTitle}>Add a Task</Text>
-
-            {/* Category grid */}
-            <View style={styles.categoryGrid}>
-              {TASK_CATEGORIES.map((cat) => (
-                <TouchableOpacity
-                  key={cat.label}
-                  style={[
-                    styles.catTile,
-                    selectedCategory?.label === cat.label && styles.catTileSelected,
-                  ]}
-                  onPress={() => setSelectedCategory(cat)}
-                >
-                  <MaterialIcons name={cat.icon as any} size={24} color={selectedCategory?.label === cat.label ? '#FFF' : cat.color} />
-                  <Text style={[styles.catLabel, selectedCategory?.label === cat.label && {color: '#FFF'}]}>{cat.label}</Text>
+        <TouchableOpacity activeOpacity={1} onPress={handleCloseModal} style={styles.modalOverlay}>
+          <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalSheet}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.lg }}>
+                <Text style={[styles.modalTitle, { marginBottom: 0 }]}>{editingId ? 'Edit Task' : i18n.t('add_task_modal_title')}</Text>
+                <TouchableOpacity onPress={handleCloseModal} style={{ padding: 4 }}>
+                  <MaterialIcons name="close" size={28} color={Colors.textPrimary} />
                 </TouchableOpacity>
-              ))}
-            </View>
+              </View>
 
-            <Text style={styles.whenLabel}>WHEN?</Text>
-            {TIME_SLOTS.map((slot) => (
-              <TouchableOpacity
-                key={slot.label}
-                style={[
-                  styles.timeSlot,
-                  selectedTime?.label === slot.label && styles.timeSlotSelected,
-                ]}
-                onPress={() => setSelectedTime(slot)}
-              >
-                <Text style={[styles.timeSlotLabel, selectedTime?.label === slot.label && {color: '#FFF'}]}>{slot.label}</Text>
-                <Text style={[styles.timeSlotTime, selectedTime?.label === slot.label && {color: 'rgba(255,255,255,0.8)'}]}>{slot.time}</Text>
-              </TouchableOpacity>
-            ))}
+              {errorMsg ? <Text style={{ color: Colors.caregiverAccent, marginBottom: Spacing.md, fontFamily: Typography.fontFamily.semiBold }}>{errorMsg}</Text> : null}
+
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Spacing.md }}>
+                {/* Category grid */}
+                <View style={styles.categoryGrid}>
+                  {TASK_CATEGORIES.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.i18nKey}
+                      style={[
+                        styles.catTile,
+                        selectedCategory?.i18nKey === cat.i18nKey && styles.catTileSelected,
+                      ]}
+                      onPress={() => setSelectedCategory(cat)}
+                    >
+                      <MaterialIcons name={cat.icon as any} size={24} color={selectedCategory?.i18nKey === cat.i18nKey ? '#FFF' : cat.color} />
+                      <Text style={[styles.catLabel, selectedCategory?.i18nKey === cat.i18nKey && {color: '#FFF'}]}>{i18n.t(cat.i18nKey)}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <Text style={styles.whenLabel}>{i18n.t('when_label')}</Text>
+                {TIME_SLOTS.map((slot) => (
+                  <TouchableOpacity
+                    key={slot.i18nKey}
+                    style={[
+                      styles.timeSlot,
+                      selectedTime?.i18nKey === slot.i18nKey && styles.timeSlotSelected,
+                    ]}
+                    onPress={() => setSelectedTime(slot)}
+                  >
+                    <Text style={[styles.timeSlotLabel, selectedTime?.i18nKey === slot.i18nKey && {color: '#FFF'}]}>{i18n.t(slot.i18nKey)}</Text>
+                    <Text style={[styles.timeSlotTime, selectedTime?.i18nKey === slot.i18nKey && {color: 'rgba(255,255,255,0.8)'}]}>{slot.time}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
 
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.addBtn}
                 onPress={handleAddReminder}
               >
-                <Text style={styles.addBtnText}>✓  Add to My Day</Text>
+                <Text style={styles.addBtnText}>{editingId ? 'Save Changes' : i18n.t('add_to_my_day')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.cancelBtn}
-                onPress={() => setShowAddTask(false)}
+                onPress={handleCloseModal}
               >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+                <Text style={styles.cancelBtnText}>{i18n.t('cancel')}</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </TouchableOpacity>
       </Modal>
 
       <FloatingChatButton />
@@ -457,7 +539,10 @@ const styles = StyleSheet.create({
   modalActions: {
     flexDirection: 'row',
     gap: Spacing.md,
-    marginTop: Spacing.xl,
+    paddingTop: Spacing.md,
+    marginTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
   },
   addBtn: {
     flex: 1,

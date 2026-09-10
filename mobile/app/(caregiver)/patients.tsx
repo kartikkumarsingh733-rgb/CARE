@@ -1,18 +1,25 @@
-// Caregiver Patients tab — patient list (Stage 1: single patient stub)
+// Caregiver Patients tab
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAppStore } from '@/store/appStore';
+import { useRouter } from 'expo-router';
 
 export default function PatientsScreen() {
-  const patient = useAppStore((state) => state.patient);
+  const patients = useAppStore((state) => state.patients) || [];
+  const router = useRouter();
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Text style={styles.title}>Patients</Text>
-        <Text style={styles.subtitle}>Managed by you</Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.title}>Patients</Text>
+          <Text style={styles.subtitle}>Managed by you</Text>
+        </View>
+        <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/(caregiver)/access' as any)}>
+          <MaterialIcons name="settings" size={24} color="#FFF" />
+        </TouchableOpacity>
       </View>
       
       {/* Search Bar */}
@@ -22,28 +29,33 @@ export default function PatientsScreen() {
           style={styles.searchInput}
           placeholder="Search patient records..."
           placeholderTextColor={Colors.caregiverTextMuted}
-          editable={false}
         />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Single patient card */}
-        <TouchableOpacity style={styles.patientCard}>
-          <View style={styles.avatarBox}>
-            <MaterialIcons name="person" size={32} color={Colors.caregiverPrimary} />
-          </View>
-          <View style={styles.patientInfo}>
-            <Text style={styles.patientName}>{patient.name}</Text>
-            <Text style={styles.patientMeta}>{patient.age} yrs · Lucknow · Active today</Text>
-            <View style={styles.statusRow}>
-              <View style={[styles.statusBadge, { backgroundColor: Colors.successTeal + '20' }]}>
-                <Text style={[styles.statusText, { color: Colors.successTeal }]}>Active</Text>
-              </View>
-              <Text style={styles.lastSeen}>Last seen 2h ago</Text>
+        {/* Patient cards */}
+        {patients.map((patient, index) => (
+          <TouchableOpacity 
+            key={patient.id || index}
+            style={styles.patientCard} 
+            onPress={() => router.push('/(caregiver)/patient-profile' as any)}
+          >
+            <View style={styles.avatarBox}>
+              <MaterialIcons name="person" size={32} color={Colors.caregiverPrimary} />
             </View>
-          </View>
-          <MaterialIcons name="chevron-right" size={24} color={Colors.caregiverTextMuted} />
-        </TouchableOpacity>
+            <View style={styles.patientInfo}>
+              <Text style={styles.patientName}>{patient.name}</Text>
+              <Text style={styles.patientMeta}>{patient.age} yrs · {patient.preferredLanguage.toUpperCase()} · Active today</Text>
+              <View style={styles.statusRow}>
+                <View style={[styles.statusBadge, { backgroundColor: Colors.successTeal + '20' }]}>
+                  <Text style={[styles.statusText, { color: Colors.successTeal }]}>Active</Text>
+                </View>
+                <Text style={styles.lastSeen}>Last seen 2h ago</Text>
+              </View>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color={Colors.caregiverTextMuted} />
+          </TouchableOpacity>
+        ))}
 
         {/* Add Patient Button */}
         <TouchableOpacity style={styles.addPatient}>
@@ -59,12 +71,18 @@ export default function PatientsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.caregiverSecondary },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 32,
     paddingBottom: 16,
     backgroundColor: Colors.caregiverBg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.caregiverBorder,
+  },
+  headerLeft: {
+    flex: 1,
   },
   title: {
     fontFamily: Typography.fontFamily.bold,
@@ -76,6 +94,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.caregiverTextMuted,
     marginTop: 4,
+  },
+  settingsBtn: {
+    backgroundColor: '#B4B4B4',
+    padding: 10,
+    borderRadius: 24,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -99,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.caregiverText,
   },
-  scroll: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 80 },
+  scroll: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 80, gap: 12 },
   patientCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -154,7 +177,7 @@ const styles = StyleSheet.create({
     color: Colors.caregiverTextMuted,
   },
   addPatient: {
-    marginTop: 16,
+    marginTop: 4,
     borderWidth: 1,
     borderColor: Colors.caregiverBorder,
     borderStyle: 'dashed',

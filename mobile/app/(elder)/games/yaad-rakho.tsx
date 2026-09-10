@@ -23,6 +23,7 @@ import {
   generateItemId,
   type GameSession,
 } from '@/engine/gameSession';
+import i18n from '@/services/i18n';
 import { getDifficultyForDomain, evaluateAndUpdateTier } from '@/engine/difficultyEngine';
 import { insertGameSession } from '@/engine/database';
 import { useAppStore } from '@/store/appStore';
@@ -33,6 +34,8 @@ type Phase = 'study' | 'recall' | 'result';
 
 export default function YaadRakhoGame() {
   const router = useRouter();
+  const language = useAppStore(state => state.patient.preferredLanguage);
+  i18n.locale = language || 'en';
   const domain = 'memory';
   const domainData = Domains[domain];
   const currentTier = useAppStore(state => state.domainTiers[domain]);
@@ -124,7 +127,7 @@ export default function YaadRakhoGame() {
 
     const updatedSession = logItem(session, {
       itemId: generateItemId(),
-      prompt: `Which one did you see? (${currentQuestion.target.label})`,
+      prompt: `Which one did you see? (${i18n.t(currentQuestion.target.i18nKey)})`,
       correctAnswer: currentQuestion.target.id,
       userAnswer: itemId,
       isCorrect: isTimeout ? false : isCorrect,
@@ -175,19 +178,15 @@ export default function YaadRakhoGame() {
         {/* Header */}
         <View style={[styles.header, { backgroundColor: domainData.color }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backText}>← Back</Text>
+            <Text style={styles.backText}>← {i18n.t('back')}</Text>
           </TouchableOpacity>
-          <Text style={styles.gameName}>Yaad Rakho</Text>
-          <Text style={styles.gameHindi}>याद रखो</Text>
+          <Text style={styles.gameName}>{i18n.t(domainData.i18nKey)}</Text>
         </View>
 
         <View style={styles.studyPhase}>
           <View style={styles.instructionBox}>
             <Text style={styles.instructionText}>
-              Look at the pictures below carefully.
-            </Text>
-            <Text style={styles.instructionHindi}>
-              नीचे दी गई तस्वीरें ध्यान से देखें।
+              {i18n.t('memory_inst')}
             </Text>
             <View style={styles.countdownBox}>
               <Text style={styles.countdownText}>{studyCountdown}s</Text>
@@ -198,8 +197,7 @@ export default function YaadRakhoGame() {
             {studyItems.map((item) => (
               <View key={item.id} style={styles.studyCard}>
                 <Text style={styles.studyEmoji}>{item.emoji}</Text>
-                <Text style={styles.studyLabel}>{item.label}</Text>
-                <Text style={styles.studyHindi}>{item.hindiLabel}</Text>
+                <Text style={styles.studyLabel}>{i18n.t(item.i18nKey)}</Text>
               </View>
             ))}
           </View>
@@ -214,9 +212,9 @@ export default function YaadRakhoGame() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: domainData.color }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← {i18n.t('back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.gameName}>Yaad Rakho</Text>
+        <Text style={styles.gameName}>{i18n.t(domainData.i18nKey)}</Text>
         <Text style={styles.progressText}>
           {roundIndex + 1} / {totalRounds}
         </Text>
@@ -238,9 +236,8 @@ export default function YaadRakhoGame() {
       <ScrollView contentContainerStyle={styles.recallContent}>
         <View style={styles.questionBox}>
           <Text style={styles.questionText}>
-            Which one did you see?
+            {i18n.t('memory_question')}
           </Text>
-          <Text style={styles.questionHindi}>आपने कौन सी तस्वीर देखी थी?</Text>
         </View>
 
         {/* Feedback banner */}
@@ -270,10 +267,10 @@ export default function YaadRakhoGame() {
               ]}
             >
               {feedback === 'correct'
-                ? '✓  Bilkul sahi! शाबाश!'
+                ? `✓ ${i18n.t('correct')}`
                 : feedback === 'timeout'
-                ? '⏳ Time is up! समय समाप्त!'
-                : `The right answer was ${currentQuestion.target.emoji} ${currentQuestion.target.label}`}
+                ? `⏳ ${i18n.t('timeout')}`
+                : `${i18n.t('wrong_answer')} ${currentQuestion.target.emoji} ${i18n.t(currentQuestion.target.i18nKey)}`}
             </Text>
           </View>
         )}
@@ -301,8 +298,7 @@ export default function YaadRakhoGame() {
               disabled={!!selected}
             >
               <Text style={styles.optionEmoji}>{option.emoji}</Text>
-              <Text style={styles.optionLabel}>{option.label}</Text>
-              <Text style={styles.optionHindi}>{option.hindiLabel}</Text>
+              <Text style={styles.optionLabel}>{i18n.t(option.i18nKey)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -314,7 +310,7 @@ export default function YaadRakhoGame() {
         correct={correctCount}
         total={totalRounds}
         domainColor={domainData.color}
-        domainName="Yaad Rakho"
+        domainName={i18n.t(domainData.i18nKey)}
         onPlayAgain={resetGame}
         onBack={() => router.push('/(elder)/play')}
       />
@@ -369,8 +365,8 @@ const styles = StyleSheet.create({
   timerBarContainer: {
     height: 6,
     backgroundColor: Colors.borderLight,
-    borderRadius: Radius.full,
-    marginBottom: Spacing.lg,
+    borderRadius: Radius.pill,
+    marginBottom: Spacing.md,
     overflow: 'hidden',
   },
   timerBarFill: {

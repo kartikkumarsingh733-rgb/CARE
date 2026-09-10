@@ -13,23 +13,28 @@ import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import FloatingChatButton from '@/components/FloatingChatButton';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { audioService } from '@/services/AudioService';
+import i18n from '@/services/i18n';
+import { useAppStore } from '@/store/appStore';
 
 const HELP_CONTACTS = [
-  { name: 'Priya', relation: 'Your Daughter', phone: '98765-43210', color: '#2B5336', imageUrl: 'https://i.pravatar.cc/150?img=47' },
-  { name: 'Suresh', relation: 'Your Son', phone: '98700-12345', color: '#3B627A', imageUrl: 'https://i.pravatar.cc/150?img=11' },
-  { name: 'Dr. Meera Sharma', relation: 'Your Doctor', phone: '080-4567-8901', color: '#586C32' },
-  { name: 'Rajesh (Caregiver)', relation: 'Professional Caregiver', phone: '98765-00000', color: '#893528' },
+  { name: 'Priya', relationKey: 'contact1_rel', phone: '98765-43210', color: '#2B5336', imageUrl: 'https://i.pravatar.cc/150?img=47' },
+  { name: 'Suresh', relationKey: 'contact2_rel', phone: '98700-12345', color: '#3B627A', imageUrl: 'https://i.pravatar.cc/150?img=11' },
+  { name: 'Dr. Meera Sharma', relationKey: 'help_doctor', phone: '080-4567-8901', color: '#586C32' },
+  { name: 'Rajesh (Caregiver)', relationKey: 'help_caregiver_title', phone: '98765-00000', color: '#893528' },
 ];
 
 export default function HelpScreen() {
+  const language = useAppStore(state => state.patient.preferredLanguage);
+  i18n.locale = language || 'en';
+
   const callContact = (phone: string, name: string) => {
     audioService.playKey('btn_select');
     Alert.alert(
       `Call ${name}?`,
       phone,
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Call Now', onPress: () => Linking.openURL(`tel:${phone.replace(/-/g, '')}`) },
+        { text: i18n.t('cancel'), style: 'cancel' },
+        { text: i18n.t('help_call_now'), onPress: () => Linking.openURL(`tel:${phone.replace(/-/g, '')}`) },
       ]
     );
   };
@@ -40,8 +45,8 @@ export default function HelpScreen() {
       'Call Emergency (112)?',
       'This will call emergency services immediately.',
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Call 112', onPress: () => Linking.openURL('tel:112') },
+        { text: i18n.t('cancel'), style: 'cancel' },
+        { text: i18n.t('help_call_now'), onPress: () => Linking.openURL('tel:112') },
       ]
     );
   };
@@ -50,9 +55,9 @@ export default function HelpScreen() {
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={[styles.pageHeader, { backgroundColor: '#B02A24' }]}>
-        <Text style={styles.pageTitle}>I Need Help</Text>
+        <Text style={styles.pageTitle}>{i18n.t('help_title')}</Text>
         <Text style={styles.pageSubtitle}>
-          Press a button to call someone
+          {i18n.t('help_emergency')}
         </Text>
       </View>
 
@@ -73,14 +78,14 @@ export default function HelpScreen() {
             <View style={styles.emergencyIconWrapper}>
               <FontAwesome5 name="exclamation" size={20} color="#B02A24" />
             </View>
-            <Text style={styles.emergencyText}>CALL EMERGENCY — 112</Text>
+            <Text style={styles.emergencyText}>{i18n.t('help_emergency_call')}</Text>
           </TouchableOpacity>
         </View>
         <Text style={styles.emergencyHint}>
-          This will call 112 (emergency services)
+          {i18n.t('help_emergency_hint')}
         </Text>
 
-        <Text style={[styles.sectionLabel, { color: '#9A7249', marginTop: Spacing.xl }]}>CALL SOMEONE YOU KNOW</Text>
+        <Text style={[styles.sectionLabel, { color: '#9A7249', marginTop: Spacing.xl }]}>{i18n.t('help_call_someone')}</Text>
         
         {/* Contacts */}
         <View style={styles.contactsList}>
@@ -103,7 +108,7 @@ export default function HelpScreen() {
                 
                 <View style={styles.contactInfo}>
                   <Text style={styles.contactName}>{contact.name}</Text>
-                  <Text style={styles.contactRelation}>{contact.relation}</Text>
+                  <Text style={styles.contactRelation}>{i18n.t(contact.relationKey)}</Text>
                   <Text style={[styles.contactPhone, { color: contact.color }]}>{contact.phone}</Text>
                 </View>
 

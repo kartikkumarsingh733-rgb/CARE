@@ -7,6 +7,7 @@ import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { aiService } from '@/services/AIService';
 import { voiceCommandService } from '@/services/VoiceCommandService';
 import { audioService } from '@/services/AudioService';
+import i18n from '@/services/i18n';
 
 type Message = {
   id: string;
@@ -17,7 +18,7 @@ type Message = {
 export default function ChatScreen() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: "Namaste! I am SmritiSaathi. How are you feeling today?", sender: 'ai' }
+    { id: '1', text: i18n.t('chat_how_are_you'), sender: 'ai' }
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -77,7 +78,7 @@ export default function ChatScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <MaterialIcons name="arrow-back" size={28} color={Colors.textOnDark} />
@@ -88,7 +89,8 @@ export default function ChatScreen() {
 
       <KeyboardAvoidingView 
         style={styles.container} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <FlatList
           ref={flatListRef}
@@ -101,8 +103,8 @@ export default function ChatScreen() {
 
         {isTyping && (
           <View style={styles.typingIndicator}>
-            <ActivityIndicator size="small" color={Colors.primary} />
-            <Text style={styles.typingText}>SmritiSaathi is typing...</Text>
+            <ActivityIndicator size="small" color={Colors.chatGreen} />
+            <Text style={styles.typingText}>{i18n.t('chat_generating')}</Text>
           </View>
         )}
 
@@ -118,7 +120,7 @@ export default function ChatScreen() {
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              placeholder={isRecording ? "Listening..." : "Type a message..."}
+              placeholder={isRecording ? i18n.t('voice_listening') : i18n.t('chat_placeholder')}
               placeholderTextColor={Colors.textSecondary}
               value={inputText}
               onChangeText={setInputText}
@@ -185,7 +187,7 @@ const styles = StyleSheet.create({
     maxWidth: '85%',
   },
   userContent: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.chatGreen,
     borderBottomRightRadius: Radius.sm,
   },
   aiContent: {
@@ -218,7 +220,7 @@ const styles = StyleSheet.create({
   },
   inputArea: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center', // Changed from flex-end to center to align buttons with text box
     padding: Spacing.sm,
     backgroundColor: '#FFF',
     borderTopWidth: 1,
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.chatGreen,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.sm,
@@ -242,7 +244,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     maxHeight: 120,
     backgroundColor: Colors.bgCream,
-    borderRadius: Radius.full,
+    borderRadius: Radius.pill,
     paddingHorizontal: Spacing.md,
     justifyContent: 'center',
     borderWidth: 1,

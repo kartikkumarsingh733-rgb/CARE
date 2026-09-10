@@ -54,10 +54,10 @@ export default function HomeScreen() {
   const hour = new Date().getHours();
   const greeting =
     hour < 12
-      ? 'Good Morning,'
+      ? i18n.t('greeting_morning')
       : hour < 17
-      ? 'Good Afternoon,'
-      : 'Good Evening,';
+      ? i18n.t('greeting_afternoon')
+      : i18n.t('greeting_evening');
 
   const handleTilePress = (route: string, audioKey: string) => {
     audioService.playKey(audioKey);
@@ -67,32 +67,32 @@ export default function HomeScreen() {
   const tiles = [
     {
       icon: 'puzzle-piece',
-      label: 'Play Games',
-      sub: 'Memory · Attention · Patterns',
+      label: i18n.t('btn_play_games'),
+      sub: i18n.t('btn_play_sub'),
       color: F.tileBlue,
       iconSize: 34,
       onPress: () => handleTilePress('/(elder)/play', 'btn_play_games'),
     },
     {
       icon: 'calendar-alt',
-      label: 'My Day',
-      sub: "Reminders and today's routine",
+      label: i18n.t('btn_my_day'),
+      sub: i18n.t('btn_my_day_sub'),
       color: F.tileBrown,
       iconSize: 30,
       onPress: () => handleTilePress('/(elder)/myday', 'btn_my_day'),
     },
     {
       icon: 'image',
-      label: 'My Memories',
-      sub: 'Family photos and stories',
+      label: i18n.t('btn_memories'),
+      sub: i18n.t('btn_memories_sub'),
       color: F.tileGreen,
       iconSize: 28,
       onPress: () => handleTilePress('/(elder)/memories', 'btn_memories'),
     },
     {
       icon: 'phone-alt',
-      label: 'I Need Help',
-      sub: 'Call family or caregiver',
+      label: i18n.t('btn_help'),
+      sub: i18n.t('btn_help_sub'),
       color: F.tileRed,
       iconSize: 32,
       onPress: () => handleTilePress('/(elder)/help', 'btn_help'),
@@ -127,9 +127,9 @@ export default function HomeScreen() {
       >
         <View style={styles.headerLeft}>
           <Text style={styles.greeting}>{greeting}</Text>
-          <Text style={[styles.name, { color: F.headerGreenText }]}>{patient.name.split(' ')[0]}ji</Text>
+          <Text style={[styles.name, { color: F.headerGreenText }]}>{patient.name.split(' ')[0]}{i18n.t('honorific')}</Text>
         </View>
-        <View style={styles.headerRight}>
+        <View style={{ alignItems: 'flex-end' }}>
           <View style={styles.timeBox}>
             <Text style={styles.timeText}>
               {new Date().toLocaleTimeString('en-US', {
@@ -152,11 +152,11 @@ export default function HomeScreen() {
           
           <TouchableOpacity 
             style={styles.caregiverToggle}
-            onPress={() => router.push('/caregiver-pin')}
+            onPress={() => router.push('/settings')}
             accessible={true}
-            accessibilityLabel="Switch to Caregiver Mode"
+            accessibilityLabel="Settings"
           >
-            <FontAwesome5 name="user-cog" size={24} color={F.headerGreenText} />
+            <FontAwesome5 name="cog" size={24} color={F.headerGreenText} />
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -172,7 +172,7 @@ export default function HomeScreen() {
         scrollEventThrottle={16}
       >
         {/* UP NEXT */}
-        <Text style={[styles.sectionLabel, { color: F.sectionTitle }]}>UP NEXT</Text>
+        <Text style={[styles.sectionLabel, { color: F.sectionTitle }]}>{i18n.t('up_next_title')}</Text>
         
         {/* Hard Shadow Wrapper for UP NEXT */}
         <View style={styles.mascotWrapper}>
@@ -182,16 +182,16 @@ export default function HomeScreen() {
           <View style={[styles.mascotBox, { backgroundColor: F.upNextBg, borderColor: F.upNextDark }]}>
             <View style={[styles.mascotLeftBar, { backgroundColor: F.upNextDark }]} />
             <View style={styles.mascotTextContainer}>
-              <Text style={[styles.mascotText, { color: F.upNextDark }]}>All done for today!</Text>
+              <Text style={[styles.mascotText, { color: F.upNextDark }]}>{i18n.t('up_next_done_title')}</Text>
               <Text style={styles.mascotSubtext}>
-                You have completed everything. Rest well tonight.
+                {i18n.t('up_next_done_desc')}
               </Text>
             </View>
           </View>
         </View>
 
         {/* WHAT WOULD YOU LIKE TO DO? */}
-        <Text style={[styles.sectionLabel, { color: F.sectionTitle, marginTop: Spacing.xs }]}>WHAT WOULD YOU LIKE TO DO?</Text>
+        <Text style={[styles.sectionLabel, { color: F.sectionTitle, marginTop: Spacing.xs }]}>{i18n.t('what_to_do')}</Text>
 
         {/* Tiles */}
         <View style={styles.list}>
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center', // Changed from flex-start to center for better alignment
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.xl,
   },
@@ -256,14 +256,16 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: 22,
+    fontSize: 28, // Increased from 22
     color: '#FFFFFF',
     letterSpacing: 0,
+    lineHeight: 36, // Added lineHeight to prevent text clipping
   },
   name: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: 28,
-    marginTop: -4,
+    fontSize: 32, // Increased from 28
+    marginTop: 0, // Removed negative margin to prevent overlap and text clipping
+    lineHeight: 40, // Added lineHeight
   },
   timeBox: {
     alignItems: 'flex-end',
@@ -273,6 +275,7 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: '#1E3526', 
     borderRadius: 20,
+    marginTop: 8, // Added margin to space out from date
   },
   timeText: {
     fontFamily: Typography.fontFamily.bold,
@@ -378,5 +381,6 @@ const styles = StyleSheet.create({
   },
   tileArrow: {
     paddingRight: Spacing.lg,
+    justifyContent: 'center', // Added to vertically center the arrow
   },
 });
